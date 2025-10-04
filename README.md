@@ -1,35 +1,35 @@
-# TombistenFite — Ortam Değişkenleri ve Otomasyon
+# TombistenFite - Ortam Degiskenleri ve Otomasyon
 
-Bu depoda gizli anahtarları repo dışında tutarak Vercel, Supabase ve GitHub ile hızlı entegrasyon için komut dosyaları eklendi.
+Bu depoda gizli anahtarlari repo disinda tutarak Vercel, Supabase ve GitHub ile hizli entegrasyon icin komut dosyalari eklendi.
 
-## Hızlı Başlangıç
+## Hizli Baslangic
 
-1) Ortam dosyasını oluşturun (gerçek değerleri doldurun):
-- `webapp/.env.local` dosyasını `webapp/.env.local.example` temel alınarak oluşturun.
-- Bu dosya Git tarafından zaten yok sayılıyor.
+1) Ortam dosyasini olusturun (gercek degerleri doldurun):
+- `webapp/.env.local` dosyasini `webapp/.env.local.example` temel alinerek olusturun.
+- Bu dosya Git tarafindan zaten yok sayiliyor.
 
-2) Opsiyonel: Supabase CLI oturumu açın
+2) Opsiyonel: Supabase CLI oturumu acin
 - `make supabase:login`
 
-3) Vercel proje ortam değişkenlerini senkronize edin
+3) Vercel proje ortam degiskenlerini senkronize edin
 - `make env:vercel:push`
-- Not: `VERCEL_TOKEN` değişkeni çalışma zamanı ortama gönderilmez (CLI amaca yönelik; deploy için gerekli değil). Diğer anahtarlar `development/preview/production` için ayarlanır.
+- Not: `VERCEL_TOKEN` degiskeni calisma zamani ortama gonderilmez (CLI amaca yonelik; deploy icin gerekli degil). Diger anahtarlar `development/preview/production` icin ayarlanir.
 
-4) GitHub repository secrets ayarlayın
-- `gh auth login` ile oturum açın (bir kez). Ardından:
+4) GitHub repository secrets ayarlayin
+- `gh auth login` ile oturum acin (bir kez). Ardindan:
 - `make env:github:push`
 
-## Kurulum ve Çalıştırma
-- Bağımlılıklar: `make setup`
-- Geliştirme: `make dev`
+## Kurulum ve Calistirma
+- Bagimliliklar: `make setup`
+- Gelistirme: `make dev`
 - Derleme: `make build`
 
-## Güvenlik
-- Gerçek tokenları kesinlikle commit etmeyin. `.env.local` Git’e dahil edilmez.
-- Script’ler değerleri stdin ile geçirir; konsolda gizli değeri yazdırmaz.
+## Guvenlik
+- Gercek tokenlari kesinlikle commit etmeyin. `.env.local` Git'e dahil edilmez.
+- Script'ler degerleri stdin ile gecirir; konsolda gizli degeri yazdirmaz.
 
 ## Notlar
-- Supabase uygulama anahtarlarınız (URL/ANON KEY) yoksa, Supabase projesi oluşturup bunları `webapp/.env.local` dosyasına ekleyin.
-- GitHub secrets için `gh` oturumu gerekli; tokenlar repo secrets olarak kaydedilir.
-- Vercel proje linki `.vercel/project.json` ile zaten mevcut; script, aynı proje kapsamını kullanır.
-
+- Supabase uygulama anahtarlari (URL/ANON KEY) yoksa, Supabase projesi olusturup bunlari `webapp/.env.local` dosyasina ekleyin.
+- GitHub secrets icin `gh` oturumu gerekli; tokenlar repo secrets olarak kaydedilir.
+- Vercel proje linki `.vercel/project.json` ile zaten mevcut; script ayni proje kapsaminda calisir.
+- Kok dizindeki `npm run build`, `npm run dev` vb. komutlar `webapp/` altindaki Next.js uygulamasini tetikler; Vercel build/preview adimlari da bu komutlara dayanir.

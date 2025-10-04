@@ -1,4 +1,6 @@
-.vercel
+.vercel/*
+!.vercel/project.json
+webapp/.vercel/
 
 # env files (root)
 .env

@@ -1,0 +1,11 @@
+{
+  "name": "tombistenfite",
+  "private": true,
+  "scripts": {
+    "preinstall": "npm install --prefix webapp --no-audit --no-fund",
+    "dev": "npm --prefix webapp run dev",
+    "build": "npm --prefix webapp run build",
+    "start": "npm --prefix webapp run start",
+    "lint": "npm --prefix webapp run lint"
+  }
+}
