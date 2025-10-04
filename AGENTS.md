@@ -51,3 +51,8 @@ Bu belge, bu depoya katkıda bulunurken uyulacak kuralları özetler. Varsayıla
 - Hazır UI kütüphanesi kullanılacaktır. Tercih: Tailwind CSS + DaisyUI (mobil odaklı, hızlı prototipleme).
 - Tasarım önceliği mobil cihazlar; masaüstü için yalnızca basit, akıcı genişleme yeterlidir.
 - Bileşenler: mobil navigasyon (alt çubuk), kart tabanlı akış, form elemanları, diyalog/alt çekmece.
+
+## Yol Haritası
+- Güncel yol haritası: `docs/ROADMAP.md`
+- Ajan, bu dosyayı tek doğruluk kaynağı olarak kabul eder ve yeni çalışmalarla birlikte günceller.
+- Yeni özellik/karar sonrası ilgili maddeleri ROADMAP’e ve gerekli ise README/İş Listesi’ne işler.
