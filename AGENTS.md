@@ -56,3 +56,8 @@ Bu belge, bu depoya katkıda bulunurken uyulacak kuralları özetler. Varsayıla
 - Güncel yol haritası: `docs/ROADMAP.md`
 - Ajan, bu dosyayı tek doğruluk kaynağı olarak kabul eder ve yeni çalışmalarla birlikte günceller.
 - Yeni özellik/karar sonrası ilgili maddeleri ROADMAP’e ve gerekli ise README/İş Listesi’ne işler.
+
+## Transkriptler
+- Uzun yanıtların tamamı görünür olmayabileceği için, ajan her önemli mesaj/özet için `docs/transcripts/transcript-N.md` dosyası oluşturur (N artan sayı: 1,2,3,…).
+- Transkriptler, son mesajın tam metnini ve gerekli ise bağlantıları içerir.
+- Kullanıcı talep ederse geçmiş mesajlar da transkript olarak geriye dönük eklenebilir.
