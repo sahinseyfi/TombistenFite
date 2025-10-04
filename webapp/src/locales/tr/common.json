@@ -1,0 +1,13 @@
+{
+  "app.title": "TombistenFite",
+  "home.welcome": "Hoş geldin",
+  "home.subtitle": "Mobil odaklı MVP'ye başlangıç",
+  "home.docs": "Dokümanlar",
+  "home.deploy": "Üretime Al",
+  "home.edit_hint": "Bu sayfayı düzenlemek için src/app/page.tsx dosyasını aç." ,
+  "nav.home": "Ana Sayfa",
+  "nav.profile": "Profil",
+  "nav.settings": "Ayarlar",
+  "profile.title": "Profil",
+  "settings.title": "Ayarlar"
+}
