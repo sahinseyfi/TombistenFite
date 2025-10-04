@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
-export default function KayitPage() {
+function KayitInner() {
+  const params = useSearchParams();
+  const ret = params.get("ret") || "/";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -16,7 +19,7 @@ export default function KayitPage() {
     const { error } = await supabase.auth.signUp({ email, password });
     setLoading(false);
     if (error) setError(error.message);
-    else window.location.href = "/";
+    else window.location.href = ret;
   }
 
   return (
@@ -42,3 +45,10 @@ export default function KayitPage() {
   );
 }
 
+export default function KayitPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center py-10"><span className="loading loading-spinner" /></div>}>
+      <KayitInner />
+    </Suspense>
+  );
+}

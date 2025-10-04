@@ -5,13 +5,14 @@ import { usePathname } from "next/navigation";
 
 const items = [
   { href: "/", label: "Ana Sayfa", icon: "home" },
+  { href: "/akis", label: "Akış", icon: "feed" },
   { href: "/profil", label: "Profil", icon: "user" },
   { href: "/ayarlar", label: "Ayarlar", icon: "cog" },
 ];
 
 function Icon({ name }: { name: string }) {
   // Basit emoji ikonlar (yer tutucu). İleride bir ikon seti ekleyebiliriz.
-  const map: Record<string, string> = { home: "🏠", user: "👤", cog: "⚙️" };
+  const map: Record<string, string> = { home: "🏠", user: "👤", cog: "⚙️", feed: "📰" };
   return <span aria-hidden>{map[name] ?? "•"}</span>;
 }
 
@@ -31,4 +32,3 @@ export default function BottomNav() {
     </nav>
   );
 }
-

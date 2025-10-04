@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
-export default function GirisPage() {
+function GirisInner() {
+  const params = useSearchParams();
+  const ret = params.get("ret") || "/";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -16,7 +19,7 @@ export default function GirisPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) setError(error.message);
-    else window.location.href = "/";
+    else window.location.href = ret;
   }
 
   return (
@@ -42,3 +45,10 @@ export default function GirisPage() {
   );
 }
 
+export default function GirisPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center py-10"><span className="loading loading-spinner" /></div>}>
+      <GirisInner />
+    </Suspense>
+  );
+}
