@@ -53,7 +53,7 @@ Bu yol haritası; mobil odaklı Next.js (App Router) + Tailwind CSS + DaisyUI ar
 - [x] DB şeması: `profiles` tablosu ve RLS politikaları (migration + push)
 - [x] DB şeması migration’ları ve RLS politikaları (profiles, posts, avatars storage).
 - [x] Profil sayfası (oku/güncelle) + avatar yükleme.
-- [ ] Akış sayfası: liste getirme, boş durum, hata durumları.
+- [x] Akış sayfası: liste + görsel paylaşımı, boş/hata durumları.
 - [ ] Lint/format + temel unit tests (UI ve server actions).
 - [ ] GitHub Actions ile CI (lint/build/test) ve Vercel entegrasyonu.
 
@@ -67,3 +67,4 @@ Bu yol haritası; mobil odaklı Next.js (App Router) + Tailwind CSS + DaisyUI ar
 - Gizli bilgiler `.env.local`’da; repo’ya yazılmaz.
 - Yeni metinler i18n anahtarı olarak eklenir, doğrudan string gömülmez.
 - Tek PR tek konu; doküman ve değişen davranışlar güncellenir.
+- Ana sayfaya mobil onboarding odaklı 'Starter Kartı' eklendi; oturum durumuna göre CTA yönlendiriliyor.
