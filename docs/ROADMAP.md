@@ -51,8 +51,8 @@ Bu yol haritası; mobil odaklı Next.js (App Router) + Tailwind CSS + DaisyUI ar
 - [x] i18n anahtar sistemi ve örnek dil dosyası (`locales/tr/common.json`).
 - [x] Supabase auth: sign up/in/out ekranları ve temel durum yönetimi (RequireAuth ile yönlendirme)
 - [x] DB şeması: `profiles` tablosu ve RLS politikaları (migration + push)
-- [ ] DB şeması migration’ları ve RLS politikaları.
-- [ ] Profil sayfası (oku/güncelle) + avatar yükleme.
+- [x] DB şeması migration’ları ve RLS politikaları (profiles, posts, avatars storage).
+- [x] Profil sayfası (oku/güncelle) + avatar yükleme.
 - [ ] Akış sayfası: liste getirme, boş durum, hata durumları.
 - [ ] Lint/format + temel unit tests (UI ve server actions).
 - [ ] GitHub Actions ile CI (lint/build/test) ve Vercel entegrasyonu.
