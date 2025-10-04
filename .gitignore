@@ -1,0 +1,12 @@
+.vercel
+
+# env files (root)
+.env
+.env.local
+.env.*.local
+
+# node_modules at repo root (defensive)
+node_modules/
+
+# scripts temp
+scripts/**/*.log
