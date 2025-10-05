@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { t } from "@/lib/i18n";
+import { useFeedRealtime } from "@/hooks/useFeedRealtime";
 
 type FeedPost = {
   id: string;
@@ -276,6 +277,68 @@ export default function AkisPage() {
     setRealtimeNonce((prev) => prev + 1);
     load();
   }, [load]);
+
+  const handlePostUpdate = useCallback((payload: { id: string; likes: number; comments: number }) => {
+    setPosts((prev) =>
+      prev.map((post) =>
+        post.id === payload.id
+          ? { ...post, likes: payload.likes, comments: payload.comments }
+          : post,
+      ),
+    );
+  }, []);
+
+  const handleLikeToggleRealtime = useCallback((postId: string, delta: number) => {
+    setPosts((prev) =>
+      prev.map((post) =>
+        post.id === postId
+          ? { ...post, likes: Math.max(0, post.likes + delta) }
+          : post,
+      ),
+    );
+  }, []);
+
+  const handleCommentInsertRealtime = useCallback((comment: FeedComment & { post_id: string }) => {
+    setPosts((prev) =>
+      prev.map((post) =>
+        post.id === comment.post_id
+          ? { ...post, comments: post.comments + 1 }
+          : post,
+      ),
+    );
+    setCommentTarget((current) =>
+      current && current.id === comment.post_id
+        ? { ...current, comments: current.comments + 1 }
+        : current,
+    );
+    setComments((prev) =>
+      commentTarget && commentTarget.id === comment.post_id ? [comment, ...prev] : prev,
+    );
+  }, [commentTarget]);
+
+  const handleCommentDeleteRealtime = useCallback((commentId: string, postId: string) => {
+    setPosts((prev) =>
+      prev.map((post) =>
+        post.id === postId
+          ? { ...post, comments: Math.max(0, post.comments - 1) }
+          : post,
+      ),
+    );
+    setCommentTarget((current) =>
+      current && current.id === postId
+        ? { ...current, comments: Math.max(0, current.comments - 1) }
+        : current,
+    );
+    setComments((prev) => prev.filter((comment) => comment.id !== commentId));
+  }, []);
+
+  useFeedRealtime({
+    onPostChange: handlePostUpdate,
+    onPostDelete: removePost,
+    onLikeToggle: handleLikeToggleRealtime,
+    onCommentInsert: (comment) => handleCommentInsertRealtime({ ...comment }),
+    onCommentDelete: handleCommentDeleteRealtime,
+  });
 
   const handleToggleLike = useCallback(async (postId: string) => {
     if (!userId) {
