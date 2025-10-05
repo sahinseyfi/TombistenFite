@@ -49,6 +49,62 @@ const HIGHLIGHT_DURATION = 4000;
 
 type RealtimeStatus = "connecting" | "connected" | "error";
 
+async function readFileAsDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error ?? new Error("Dosya okunamadi"));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function compressImageFile(original: File): Promise<File> {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return original;
+  }
+  if (!original.type.startsWith("image/")) {
+    return original;
+  }
+  try {
+    const dataUrl = await readFileAsDataURL(original);
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new window.Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("Gorsel yuklenemedi"));
+      img.src = dataUrl;
+    });
+
+    const maxDimension = 1280;
+    const scale = Math.min(1, maxDimension / Math.max(image.width, image.height));
+    const targetWidth = Math.max(1, Math.round(image.width * scale));
+    const targetHeight = Math.max(1, Math.round(image.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      return original;
+    }
+    ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
+
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob((result) => {
+        if (result) resolve(result);
+        else reject(new Error("Gorsel sikistirma basarisiz"));
+      }, "image/jpeg", 0.7);
+    });
+
+    const baseName = original.name.includes(".")
+      ? original.name.slice(0, original.name.lastIndexOf("."))
+      : original.name;
+    const fileName = `${baseName || "gorsel"}-compressed.jpg`;
+    return new File([blob], fileName, { type: "image/jpeg", lastModified: Date.now() });
+  } catch (error) {
+    console.error("Gorsel sikistirma basarisiz", error);
+    return original;
+  }
+}
+
 export default function AkisPage() {
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [state, setState] = useState<FetchState>("loading");
@@ -157,18 +213,42 @@ export default function AkisPage() {
   }, [normalizePosts, markReady, userId]);
 
   const upsertPost = useCallback(
+
     (incoming: FeedPost, options?: { highlight?: boolean; preserveCounts?: boolean }) => {
+
       setPosts((prev) => {
+
+        const existing = prev.find((post) => post.id === incoming.id);
+
+        const preserveCounts = options?.preserveCounts ?? true;
+
+        const nextPost: FeedPost = preserveCounts && existing
+
+          ? { ...incoming, likes: existing.likes, comments: existing.comments }
+
+          : incoming;
+
         const filtered = prev.filter((post) => post.id !== incoming.id);
-        return normalizePosts([incoming, ...filtered]);
+
+        return normalizePosts([nextPost, ...filtered]);
+
       });
+
       if (options?.highlight) {
+
         addHighlight(incoming.id);
+
       }
+
       markReady();
+
     },
+
     [normalizePosts, markReady, addHighlight],
+
   );
+
+
 
   const removePost = useCallback(
     (id: string) => {
@@ -500,23 +580,44 @@ export default function AkisPage() {
   }
 
   async function uploadImage(uid: string): Promise<string | null> {
+
     if (!imageFile) return null;
-    const fileExt = imageFile.name.split(".").pop()?.toLowerCase() || "jpg";
-    const base = imageFile.name.includes(".") ? imageFile.name.slice(0, imageFile.name.lastIndexOf(".")) : imageFile.name;
-    const sanitizedBase = base.replace(/[^a-zA-Z0-9]+/g, "-").toLowerCase().replace(/^-+|-+$/g, "");
-    const filePath = `${uid}/${Date.now()}-${sanitizedBase || "gorsel"}.${fileExt}`;
+
+    const processedFile = await compressImageFile(imageFile);
+
+    const fileExt = processedFile.name.split('.').pop()?.toLowerCase() || (processedFile.type === 'image/jpeg' ? 'jpg' : 'png');
+
+    const baseName = processedFile.name.includes('.') ? processedFile.name.slice(0, processedFile.name.lastIndexOf('.')) : processedFile.name;
+
+    const sanitizedBase = baseName.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase().replace(/^-+|-+$/g, '');
+
+    const filePath = `${uid}/${Date.now()}-${sanitizedBase || 'gorsel'}.${fileExt}`;
+
     const { error: uploadError } = await supabase.storage
-      .from("post-images")
-      .upload(filePath, imageFile, {
-        cacheControl: "3600",
+
+      .from('post-images')
+
+      .upload(filePath, processedFile, {
+
+        cacheControl: '3600',
+
         upsert: false,
+
       });
+
     if (uploadError) {
+
       throw new Error(uploadError.message);
+
     }
-    const { data } = supabase.storage.from("post-images").getPublicUrl(filePath);
+
+    const { data } = supabase.storage.from('post-images').getPublicUrl(filePath);
+
     return data.publicUrl ?? null;
+
   }
+
+
 
   async function onPost() {
     setErrorMsg(null);
