@@ -103,7 +103,7 @@ Bu yol haritası; mobil odaklı Next.js (App Router) + Tailwind CSS + DaisyUI ar
 - [x] Ayarlar: tema geçişi tercihlerini Supabase profiline kaydet ve arayüzü tamamla.
 - [x] Supabase Realtime aboneliğiyle akış sayfasını otomatik güncelle.
 - [x] Gönderiler için beğeni ve yorum sunucu eylemleri ile mobil odaklı arayüz ekle.
-- [ ] PWA manifesti ve ikon setlerini tamamla, mobil kısayol testlerini belgele.
+- [x] PWA manifesti ve ikon setlerini tamamla, mobil kısayol testlerini belgele.
 - [ ] ISR ve revalidate stratejilerini sayfa bazında yapılandır (liste/ayrıntı).
 - [ ] Postgres tam metin arama + filtre/sort UI’sı.
 - [ ] Güvenlik başlıkları ve oran sınırlama middleware’i.
@@ -142,3 +142,4 @@ Bu yol haritası; mobil odaklı Next.js (App Router) + Tailwind CSS + DaisyUI ar
 - Akış sayfası Supabase Realtime kanalından INSERT/UPDATE/DELETE olaylarını dinleyip en fazla 20 kaydı canlı güncelliyor.
 - Realtime bağlantısı hata aldığında kullanıcıya uyarı gösterilip yeniden bağlanma seçeneği sunuluyor; yeni gönderiler rozetle vurgulanıyor.
 - Akış kartları beğeni/yorum sayaçları ve mobil yorum paneli ile etkileşim odaklı hale getirildi.
+- PWA manifesti ve maskable ikonlar eklendi; uygulama ana ekrana eklenmek için uygun hale getirildi.

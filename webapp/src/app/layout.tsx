@@ -18,6 +18,18 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "TombistenFite",
   description: "Mobil odaklı MVP",
+  applicationName: "TombistenFite",
+  themeColor: '#0f172a',
+  manifest: '/manifest.json',
+  icons: {
+    icon: ['/icons/icon.svg'],
+    apple: ['/icons/icon-maskable.svg'],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'TombistenFite',
+  },
 };
 
 export default function RootLayout({

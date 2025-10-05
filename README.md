@@ -40,3 +40,7 @@ Bu depoda gizli anahtarlari repo disinda tutarak Vercel, Supabase ve GitHub ile 
 - GitHub Actions hattı `.github/workflows/ci.yml` içinde tanımlıdır.
 - Lint/Test/Build adımları Node 20 üzerinde çalışır.
 - Vercel önizleme dağıtımı için repo secret'ları olarak `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` değerlerini tanımlayın.
+
+## PWA
+- Manifest ve ikonlar varsayılan olarak `/icons` altında tanımlıdır.
+- Üretim dağıtımında uygulamayı ana ekrana ekleyerek kısayolu test edebilirsin.
