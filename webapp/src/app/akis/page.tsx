@@ -157,7 +157,7 @@ export default function AkisPage() {
   }, [normalizePosts, markReady, userId]);
 
   const upsertPost = useCallback(
-    (incoming: Post, options?: { highlight?: boolean }) => {
+    (incoming: FeedPost, options?: { highlight?: boolean; preserveCounts?: boolean }) => {
       setPosts((prev) => {
         const filtered = prev.filter((post) => post.id !== incoming.id);
         return normalizePosts([incoming, ...filtered]);
