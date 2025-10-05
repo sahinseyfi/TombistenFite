@@ -6,6 +6,9 @@
     "dev": "npm --prefix webapp run dev",
     "build": "npm --prefix webapp run build",
     "start": "npm --prefix webapp run start",
-    "lint": "npm --prefix webapp run lint"
+    "lint": "npm --prefix webapp run lint",
+    "format": "npm --prefix webapp run format",
+    "test": "npm --prefix webapp run test",
+    "test:watch": "npm --prefix webapp run test:watch"
   }
 }

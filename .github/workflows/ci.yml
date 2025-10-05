@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  NODE_VERSION: 20
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kaynak kodu al
+        uses: actions/checkout@v4
+
+      - name: Node.js kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: webapp/package-lock.json
+
+      - name: Bağımlılıkları kur
+        run: npm ci --prefix webapp
+
+      - name: Lint
+        run: npm run lint --prefix webapp
+
+      - name: Test
+        run: npm run test --prefix webapp
+
+      - name: Build
+        run: npm run build --prefix webapp
+
+  vercel-preview:
+    name: Vercel Preview Deploy
+    needs: quality
+    if: ${{ secrets.VERCEL_TOKEN != '' && secrets.VERCEL_PROJECT_ID != '' && secrets.VERCEL_ORG_ID != '' }}
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+    steps:
+      - name: Kaynak kodu al
+        uses: actions/checkout@v4
+
+      - name: Node.js kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Bağımlılıkları kur
+        working-directory: webapp
+        run: npm ci
+
+      - name: Ortam yapılandırmasını çek
+        working-directory: webapp
+        env:
+          VERCEL_ENV: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
+        run: npx vercel pull --yes --environment=$VERCEL_ENV --token=$VERCEL_TOKEN
+
+      - name: Ön yapıyı oluştur
+        working-directory: webapp
+        run: npx vercel build --token=$VERCEL_TOKEN
+
+      - name: Önizlemeyi yayımla
+        working-directory: webapp
+        run: npx vercel deploy --prebuilt --token=$VERCEL_TOKEN

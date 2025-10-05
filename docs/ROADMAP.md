@@ -43,8 +43,52 @@ Bu yol haritası; mobil odaklı Next.js (App Router) + Tailwind CSS + DaisyUI ar
 - Basit log/telemetri (opsiyonel).
 - Hata raporlama (opsiyonel: Sentry veya benzeri).
 
----
+## 7. Topluluk ve Etkileşim
+- Supabase Realtime ile akış yenilemeleri ve istemci aboneliği.
+- Gönderi etkileşimleri (beğen, yorumla, bildir) ve listeler.
+- Profil paylaşım bağlantıları, kart önizlemeleri ve avatar yedekleri.
+- Moderasyon akışı: Supabase politikalarını sıkılaştır, raporlanan içeriği izole et.
 
+## 8. Deneyim ve Özelleştirme
+- Tema geçişi: ayarlar sayfasında kalıcı tercih ve sistem temasını algılama.
+- Bildirimler: toast yığınını standartlaştır, e-posta uyarıları için Supabase tetikleyicisi hazırla.
+- Onboarding ilerlemesi: Starter kartını tamamlayan kullanıcıya ilerleme göstergesi ve kutlama ekle.
+- Görsel yükleme: boyut optimizasyonu, CDN cache kontrolleri ve hata mesajlarını standartlaştır.
+
+## 9. Yayına Hazırlık ve Büyüme
+- Kapalı beta yayını, geri bildirim formu ve Supabase aracılığıyla geri bildirim saklama.
+- PWA hazırlığı: manifest, ikon setleri, Add to Home Screen testi.
+- Landing sayfası/dokümantasyonla ürün hikayesini anlat, ekran görüntüleri ekle.
+- Metrikler: aktif kullanıcı, gönderi hacmi ve retention için Supabase raporlama ve dashboard taslağı.
+
+## 10. Performans ve Ölçeklenebilirlik
+- Görsel optimizasyonu: `next/image` kullanımı, uygun `sizes` ve kalite ayarları.
+- ISR/SSG/SSR stratejileri: kritik sayfalar için ISR; liste sayfalarında segment bazlı revalidate.
+- Vercel Edge/Cache: yönlendirmeler ve statik varlıklar için cache başlıkları.
+- Postgres indeksleri ve sorgu gözden geçirme; RLS kuralları altında performans testleri.
+
+## 11. Güvenlik ve Uygunluk
+- Güvenlik başlıkları: `Content-Security-Policy`, `X-Frame-Options`, `Strict-Transport-Security`.
+- Oran sınırlama (rate limiting) ve basit bot koruması (middleware tabanlı).
+- Denetim kayıtları (audit log): kritik eylemler için tablo ve tetikleyici.
+- Gizlilik: veri saklama politikası ve silme talebi akışı (opsiyonel).
+
+## 12. Arama ve Keşif
+- Postgres tam metin arama (TSVector/TSQuery) veya `pg_trgm` benzerlik araması.
+- Filtreleme ve sıralama: tarih, popülerlik, kullanıcı takiplerine göre.
+- Etiket/konu sisteminin eklenmesi ve ilgili sayfa/akışlar.
+
+## 13. Bildirimler ve Realtime Gelişimleri
+- PWA push bildirimleri (Service Worker) ve izin akışı.
+- Uygulama içi bildirim “gelen kutusu” ve okundu/okunmadı durumu.
+- E-posta tetikleyicileri: önemli eylemler için (opsiyonel Supabase Functions/Webhooks).
+
+## 14. Monetizasyon ve Faturalandırma (Opsiyonel)
+- Paket/plan modeli (Ücretsiz, Pro vb.) ve yetkilendirme kontrolleri.
+- Stripe ile test ortamında ödeme akışı ve webhook doğrulaması.
+- Fatura geçmişi ve abonelik durumu sayfası.
+
+---
 ## Backlog (Örnek İşler)
 - [x] Tailwind + DaisyUI kur, tema tanımları ve tipografi.
 - [x] Alt navigasyon, app layout ve kart bileşenleri.
@@ -54,8 +98,18 @@ Bu yol haritası; mobil odaklı Next.js (App Router) + Tailwind CSS + DaisyUI ar
 - [x] DB şeması migration’ları ve RLS politikaları (profiles, posts, avatars storage).
 - [x] Profil sayfası (oku/güncelle) + avatar yükleme.
 - [x] Akış sayfası: liste + görsel paylaşımı, boş/hata durumları.
-- [ ] Lint/format + temel unit tests (UI ve server actions).
-- [ ] GitHub Actions ile CI (lint/build/test) ve Vercel entegrasyonu.
+- [x] Lint/format + temel unit tests (UI ve server actions).
+- [x] GitHub Actions ile CI (lint/build/test) ve Vercel entegrasyonu.
+- [x] Ayarlar: tema geçişi tercihlerini Supabase profiline kaydet ve arayüzü tamamla.
+- [x] Supabase Realtime aboneliğiyle akış sayfasını otomatik güncelle.
+- [x] Gönderiler için beğeni ve yorum sunucu eylemleri ile mobil odaklı arayüz ekle.
+- [ ] PWA manifesti ve ikon setlerini tamamla, mobil kısayol testlerini belgele.
+- [ ] ISR ve revalidate stratejilerini sayfa bazında yapılandır (liste/ayrıntı).
+- [ ] Postgres tam metin arama + filtre/sort UI’sı.
+- [ ] Güvenlik başlıkları ve oran sınırlama middleware’i.
+- [ ] Basit audit log şeması ve kritik eylem kaydı.
+- [ ] PWA push bildirimi ve uygulama içi bildirim gelen kutusu.
+- [ ] Stripe test entegrasyonu, webhook doğrulaması ve plan yetkilendirmeleri.
 
 ## Kabul Kriterleri (MVP)
 - Mobilde akıcı çalışan temel UI (ana akış + profil + auth).
@@ -63,8 +117,28 @@ Bu yol haritası; mobil odaklı Next.js (App Router) + Tailwind CSS + DaisyUI ar
 - Production deploy (Vercel) ve dokümante kurulabilirlik.
 - Türkçe arayüz ve hata mesajları.
 
+## Kabul Kriterleri (Beta)
+- Ana akışta ISR + cache ile düşük TTFB ve istikrarlı yüklenme.
+- Güvenlik başlıkları aktif, temel rate limiting çalışır durumda.
+- En az bir arama/filtreleme senaryosu gerçek veride hızlı sonuç verir.
+- Bildirimler: uygulama içi gelen kutusu ve en az bir push senaryosu doğrulanmış.
+
+## Kabul Kriterleri (v1)
+- Ödeme (opsiyonel) akışı uçtan uca test ortamında problemsiz çalışır.
+- Analitik temel olaylar kaydediliyor; ürün sağlık metrikleri izlenebilir.
+- Performans bütçeleri tanımlı; kritik sayfalarda LCP/FID hedefleri sağlanır.
+
 ## Notlar ve Kararlar
 - Gizli bilgiler `.env.local`’da; repo’ya yazılmaz.
 - Yeni metinler i18n anahtarı olarak eklenir, doğrudan string gömülmez.
 - Tek PR tek konu; doküman ve değişen davranışlar güncellenir.
 - Ana sayfaya mobil onboarding odaklı 'Starter Kartı' eklendi; oturum durumuna göre CTA yönlendiriliyor.
+- Tema geçişi kullanıcı profiline kaydedilecek; ayarlar ekranı bu tercih üstünden çalışacak.
+- Akış gerçek zamanlı yenilemeler Supabase Realtime ile sağlanacak; çevrimdışı fallback olarak manuel yenileme korunacak.
+- Ödeme ve gelişmiş analitik opsiyoneldir; gizlilik ve güvenlik başlıkları zorunlu tutulacaktır.
+- Prettier + Vitest altyapısı `npm run format` ve `npm run test` komutlarıyla devreye alındı.
+- GitHub Actions CI hattı (`.github/workflows/ci.yml`) lint/test/build aşamalarını çalıştırır; Vercel dağıtımı için `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` secret'larının tanımlı olması gerekir.
+- Tema tercihi ThemeProvider ile Supabase profiline yazılarak cihazlar arasında senkronlanıyor.
+- Akış sayfası Supabase Realtime kanalından INSERT/UPDATE/DELETE olaylarını dinleyip en fazla 20 kaydı canlı güncelliyor.
+- Realtime bağlantısı hata aldığında kullanıcıya uyarı gösterilip yeniden bağlanma seçeneği sunuluyor; yeni gönderiler rozetle vurgulanıyor.
+- Akış kartları beğeni/yorum sayaçları ve mobil yorum paneli ile etkileşim odaklı hale getirildi.

@@ -1,6 +1,6 @@
 SHELL := /usr/bin/env bash
 
-.PHONY: setup dev build test env:vercel:push env:github:push supabase:login vercel:deploy vercel:logs vercel:env:list supabase:api-keys
+.PHONY: setup dev build test format env:vercel:push env:github:push supabase:login vercel:deploy vercel:logs vercel:env:list supabase:api-keys
 
 setup:
 	@echo "+ Kurulum: webapp bağımlılıkları yükleniyor"
@@ -13,7 +13,10 @@ build:
 	cd webapp && npm run build
 
 test:
-	@echo "Bu projede test komutu tanımlı değil. (Jest/Vitest eklenebilir)"
+	cd webapp && npm run test
+
+format:
+	cd webapp && npm run format
 
 env:vercel:push:
 	@./scripts/env/push_vercel_env.sh webapp/.env.local

@@ -23,6 +23,8 @@ Bu depoda gizli anahtarlari repo disinda tutarak Vercel, Supabase ve GitHub ile 
 - Bagimliliklar: `make setup`
 - Gelistirme: `make dev`
 - Derleme: `make build`
+- Test: `make test` (Vitest + Testing Library)
+- Format: `make format` (Prettier + Tailwind plugin)
 
 ## Guvenlik
 - Gercek tokenlari kesinlikle commit etmeyin. `.env.local` Git'e dahil edilmez.
@@ -33,3 +35,8 @@ Bu depoda gizli anahtarlari repo disinda tutarak Vercel, Supabase ve GitHub ile 
 - GitHub secrets icin `gh` oturumu gerekli; tokenlar repo secrets olarak kaydedilir.
 - Vercel proje linki `.vercel/project.json` ile zaten mevcut; script ayni proje kapsaminda calisir.
 - Kok dizindeki `npm run build`, `npm run dev` vb. komutlar `webapp/` altindaki Next.js uygulamasini tetikler; Vercel build/preview adimlari da bu komutlara dayanir.
+
+## CI
+- GitHub Actions hattı `.github/workflows/ci.yml` içinde tanımlıdır.
+- Lint/Test/Build adımları Node 20 üzerinde çalışır.
+- Vercel önizleme dağıtımı için repo secret'ları olarak `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` değerlerini tanımlayın.
