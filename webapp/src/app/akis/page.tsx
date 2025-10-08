@@ -147,6 +147,62 @@ function getInitials(name: string | null): string {
   return initials || 'TF';
 }
 
+function HeartIcon({ filled = false, className = "h-4 w-4" }: { filled?: boolean; className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      className={className}
+      aria-hidden
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth={filled ? 0 : 1.5}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M11.995 21.25c-.327 0-.652-.098-.929-.287C8.23 19.078 4.5 15.962 4.5 11.56c0-2.582 1.974-4.56 4.5-4.56 1.51 0 2.87.757 3.7 1.954.83-1.197 2.19-1.954 3.7-1.954 2.526 0 4.5 1.978 4.5 4.56 0 4.403-3.73 7.519-6.566 9.404-.277.189-.602.287-.929.287Z"
+      />
+    </svg>
+  );
+}
+
+function ChatBubbleIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      className={className}
+      aria-hidden
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M8 10h8M8 14h4m8 0c0 4-4 7-8 7a8.91 8.91 0 0 1-3.66-.77L4 21l.77-4.34A7.87 7.87 0 0 1 3 13c0-4 4-7 9-7s9 3 9 7Z"
+      />
+    </svg>
+  );
+}
+
+function CloseIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      className={className}
+      aria-hidden
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="m6 6 12 12M18 6 6 18" />
+    </svg>
+  );
+}
+
 export default function AkisPage() {
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [state, setState] = useState<FetchState>("loading");
@@ -858,9 +914,9 @@ export default function AkisPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="mx-auto flex w-full max-w-xl flex-col gap-4 px-4 pb-24 pt-2 sm:px-0">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">{t("feed.title")}</h1>
+        <h1 className="text-xl font-semibold text-base-content">{t("feed.title")}</h1>
         <span className={`badge badge-sm ${realtimeStatusTone}`}>
           {realtimeStatusLabel}
         </span>
@@ -879,46 +935,67 @@ export default function AkisPage() {
         </div>
       )}
       {authed && (
-        <div className="card bg-base-100 shadow">
-          <div className="card-body gap-3">
+        <form
+          className="card border border-base-200 bg-base-100/95 shadow-md backdrop-blur supports-backdrop:bg-base-100/80"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void onPost();
+          }}
+        >
+          <div className="card-body gap-4 p-4 sm:p-6">
             <textarea
-              className="textarea textarea-bordered"
+              className="textarea textarea-bordered textarea-sm min-h-[120px] w-full resize-none rounded-xl border-base-200 bg-base-100 text-sm leading-relaxed sm:text-base"
               placeholder={t("feed.placeholder")}
               value={content}
               onChange={(e) => setContent(e.target.value)}
             />
-            <div className="flex flex-col gap-2">
-              <label className="btn btn-outline btn-xs sm:btn-sm w-fit" htmlFor="feed-image-input">
-                {t("feed.attach")}
-              </label>
-              <input id="feed-image-input" type="file" accept="image/*" className="hidden" onChange={onFileChange} />
-              {imagePreview && (
-                <div className="relative w-full overflow-hidden rounded-lg border border-base-200">
-                  <Image
-                    src={imagePreview}
-                    alt={t("feed.image_preview_alt")}
-                    width={1024}
-                    height={1024}
-                    className="h-auto w-full object-cover"
-                    unoptimized
-                  />
-                  <div className="absolute right-2 top-2">
-                    <button type="button" className="btn btn-xs" onClick={clearImage}>
-                      {t("feed.remove_image")}
-                    </button>
-                  </div>
-                </div>
-              )}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <label
+                  className="btn btn-outline btn-xs sm:btn-sm"
+                  htmlFor="feed-image-input"
+                >
+                  {t("feed.attach")}
+                </label>
+                <input
+                  id="feed-image-input"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={onFileChange}
+                />
+                {imagePreview && (
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-xs sm:btn-sm text-error"
+                    onClick={clearImage}
+                  >
+                    {t("feed.remove_image")}
+                  </button>
+                )}
+              </div>
+              <button
+                type="submit"
+                className={`btn btn-primary btn-sm sm:btn-md min-w-[96px] justify-center ${sending ? "btn-disabled loading" : ""}`}
+                disabled={sending}
+              >
+                {sending ? t("feed.posting") : t("feed.post")}
+              </button>
             </div>
-            <button
-              className={`btn btn-primary btn-sm self-end ${sending ? "btn-disabled" : ""}`}
-              onClick={onPost}
-              disabled={sending}
-            >
-              {sending ? t("feed.posting") : t("feed.post")}
-            </button>
+            {imagePreview && (
+              <div className="relative w-full overflow-hidden rounded-2xl border border-base-200">
+                <Image
+                  src={imagePreview}
+                  alt={t("feed.image_preview_alt")}
+                  width={1024}
+                  height={1024}
+                  className="h-auto w-full object-cover"
+                  unoptimized
+                />
+              </div>
+            )}
           </div>
-        </div>
+        </form>
       )}
 
       <div className="grid grid-cols-1 gap-3">
@@ -942,22 +1019,22 @@ export default function AkisPage() {
           return (
             <article
               key={post.id}
-              className={`card bg-base-100 shadow border border-base-200 transition-all ${isHighlighted ? 'ring-2 ring-primary/60' : ''}`}
+              className={`card rounded-2xl border border-base-200 bg-base-100/95 shadow-sm transition-all ${isHighlighted ? 'ring-2 ring-primary/60' : ''}`}
             >
-              <div className="card-body gap-3">
+              <div className="card-body gap-4 p-4 sm:p-6">
                 {isHighlighted && (
                   <span className="badge badge-primary badge-xs w-fit">{t('feed.realtime.new')}</span>
                 )}
                 <div className="flex items-center gap-3 text-sm text-base-content/70">
                   <div className="avatar">
-                    <div className="h-10 w-10 overflow-hidden rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold">
+                    <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-sm font-semibold text-primary">
                       {post.author?.avatar_url ? (
                         <Image
                           src={post.author.avatar_url}
                           alt={post.author.display_name ?? t('feed.author.unknown')}
-                          width={40}
-                          height={40}
-                          className="h-10 w-10 rounded-full object-cover"
+                          width={44}
+                          height={44}
+                          className="h-11 w-11 rounded-full object-cover"
                           unoptimized
                         />
                       ) : (
@@ -966,12 +1043,14 @@ export default function AkisPage() {
                     </div>
                   </div>
                   <div className="flex flex-col">
-                    <span className="font-medium text-base-content">{post.author?.display_name ?? t('feed.author.unknown')}</span>
+                    <span className="text-sm font-semibold text-base-content">
+                      {post.author?.display_name ?? t('feed.author.unknown')}
+                    </span>
                     <span className="text-[11px] text-base-content/60">{post.createdLabel}</span>
                   </div>
                 </div>
                 {post.image_url && (
-                  <div className="overflow-hidden rounded-lg border border-base-200">
+                  <div className="overflow-hidden rounded-2xl border border-base-200">
                     <Image
                       src={post.image_url}
                       alt={t('feed.image_alt')}
@@ -982,28 +1061,34 @@ export default function AkisPage() {
                     />
                   </div>
                 )}
-                {post.content && <p className="whitespace-pre-wrap text-sm">{post.content}</p>}
-                <p className="text-[11px] text-base-content/50">{post.createdLabel}</p>
-                <div className="flex items-center gap-3 pt-1 text-sm">
+                {post.content && (
+                  <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-base-content/90">
+                    {post.content}
+                  </p>
+                )}
+                <div className="flex items-center justify-between gap-3 pt-1">
                   <button
                     type="button"
-                    className={`btn btn-ghost btn-xs gap-1 ${post.liked ? 'text-primary' : ''}`}
+                    className={`flex items-center gap-2 rounded-full border border-base-200 px-3 py-1 text-sm font-medium transition-colors ${
+                      post.liked ? 'border-primary bg-primary/10 text-primary' : 'hover:border-primary/60 hover:text-primary'
+                    }`}
                     onClick={() => handleToggleLike(post.id)}
                     disabled={likeBusy === post.id}
+                    aria-pressed={post.liked}
                   >
-                    <span aria-hidden>{post.liked ? '❤' : '♡'}</span>
-                    <span>{post.likes}</span>
+                    <HeartIcon filled={post.liked} className="h-4 w-4" />
+                    <span className="font-semibold">{post.likes}</span>
                     <span className="sr-only">
                       {post.liked ? t('feed.unlike') : t('feed.like')}
                     </span>
                   </button>
                   <button
                     type="button"
-                    className="btn btn-ghost btn-xs gap-1"
+                    className="flex items-center gap-2 rounded-full border border-base-200 px-3 py-1 text-sm font-medium transition-colors hover:border-primary/60 hover:text-primary"
                     onClick={() => openComments(post)}
                   >
-                    <span aria-hidden>💬</span>
-                    <span>{post.comments}</span>
+                    <ChatBubbleIcon className="h-4 w-4" />
+                    <span className="font-semibold">{post.comments}</span>
                     <span className="sr-only">{t('feed.comments.open')}</span>
                   </button>
                 </div>
@@ -1011,22 +1096,28 @@ export default function AkisPage() {
             </article>
           );
         })}
+
       </div>
 
       {commentTarget && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-base-100/95 backdrop-blur">
-          <div className="flex items-center justify-between gap-3 border-b border-base-200 px-4 py-3">
+        <div className="fixed inset-0 z-50 flex flex-col bg-base-100/95 pb-4 pt-4 backdrop-blur-sm sm:inset-x-4 sm:inset-y-10 sm:rounded-3xl sm:border sm:border-base-200 sm:pb-6 sm:pt-6 sm:shadow-2xl">
+          <div className="flex items-center justify-between gap-3 border-b border-base-200 px-4 pb-3 sm:px-6 sm:pb-4">
             <div>
-              <p className="text-sm font-medium">{t('feed.comments.title')}</p>
-              <p className="text-xs text-base-content/70">
+              <p className="text-sm font-semibold text-base-content">{t('feed.comments.title')}</p>
+              <p className="text-xs text-base-content/60">
                 {t('feed.comments.count').replace('{count}', String(commentTarget.comments))}
               </p>
             </div>
-            <button type="button" className="btn btn-sm btn-ghost" onClick={closeComments}>
-              {t('feed.comments.close')}
+            <button
+              type="button"
+              className="btn btn-ghost btn-circle btn-sm text-base-content/70 hover:text-base-content"
+              onClick={closeComments}
+              aria-label={t('feed.comments.close')}
+            >
+              <CloseIcon className="h-4 w-4" />
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 sm:px-6 sm:py-4">
             {commentsLoading && (
               <div className="flex justify-center py-6">
                 <span className="loading loading-spinner" aria-label={t('feed.comments.loading')} />
@@ -1041,17 +1132,17 @@ export default function AkisPage() {
               <p className="text-sm text-base-content/60">{t('feed.comments.empty')}</p>
             )}
             {!commentsLoading && comments.map((comment) => (
-              <div key={comment.id} className="rounded-lg border border-base-200 p-3 text-sm space-y-2">
+              <div key={comment.id} className="rounded-2xl border border-base-200 p-3 text-sm sm:p-4">
                 <div className="flex items-center gap-3 text-sm text-base-content/70">
                   <div className="avatar">
-                    <div className="h-8 w-8 overflow-hidden rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold">
+                    <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-xs font-semibold text-primary">
                       {comment.author?.avatar_url ? (
                         <Image
                           src={comment.author.avatar_url}
                           alt={comment.author.display_name ?? t('feed.author.unknown')}
-                          width={32}
-                          height={32}
-                          className="h-8 w-8 rounded-full object-cover"
+                          width={36}
+                          height={36}
+                          className="h-9 w-9 rounded-full object-cover"
                           unoptimized
                         />
                       ) : (
@@ -1060,20 +1151,26 @@ export default function AkisPage() {
                     </div>
                   </div>
                   <div className="flex flex-col">
-                    <span className="font-medium text-base-content">{comment.author?.display_name ?? t('feed.author.unknown')}</span>
-                    <span className="text-[11px] text-base-content/60">{commentFormatter.format(new Date(comment.created_at))}</span>
+                    <span className="font-semibold text-base-content">
+                      {comment.author?.display_name ?? t('feed.author.unknown')}
+                    </span>
+                    <span className="text-[11px] text-base-content/60">
+                      {commentFormatter.format(new Date(comment.created_at))}
+                    </span>
                   </div>
                 </div>
                 {comment.content && (
-                  <p className="whitespace-pre-wrap text-sm text-base-content">{comment.content}</p>
+                  <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-base-content">
+                    {comment.content}
+                  </p>
                 )}
               </div>
             ))}
           </div>
-          <div className="border-t border-base-200 bg-base-100 px-4 py-3">
+          <div className="border-t border-base-200 bg-base-100 px-4 pt-3 sm:px-6 sm:pt-4">
             {authed ? (
               <form
-                className="flex items-end gap-2"
+                className="flex flex-col gap-3"
                 onSubmit={(event) => {
                   event.preventDefault();
                   submitComment();
@@ -1083,8 +1180,7 @@ export default function AkisPage() {
                   <label className="sr-only" htmlFor="comment-input">{t('feed.comments.placeholder')}</label>
                   <textarea
                     id="comment-input"
-                    className="textarea textarea-bordered textarea-sm w-full"
-                    rows={2}
+                    className="textarea textarea-bordered w-full min-h-[96px] resize-none rounded-xl border-base-200 bg-base-100 text-sm leading-relaxed"
                     placeholder={t('feed.comments.placeholder')}
                     value={commentContent}
                     onChange={(event) => {
@@ -1093,13 +1189,15 @@ export default function AkisPage() {
                     }}
                   />
                 </div>
-                <button
-                  type="submit"
-                  className={`btn btn-primary btn-sm ${commentPosting ? 'btn-disabled' : ''}`}
-                  disabled={commentPosting}
-                >
-                  {commentPosting ? t('feed.comments.sending') : t('feed.comments.send')}
-                </button>
+                <div className="flex items-center justify-end">
+                  <button
+                    type="submit"
+                    className={`btn btn-primary btn-sm min-w-[120px] ${commentPosting ? 'btn-disabled loading' : ''}`}
+                    disabled={commentPosting}
+                  >
+                    {commentPosting ? t('feed.comments.sending') : t('feed.comments.send')}
+                  </button>
+                </div>
               </form>
             ) : (
               <p className="text-sm text-base-content/70">
