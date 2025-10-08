@@ -27,6 +27,23 @@ type FeedComment = {
 
 type FetchState = "loading" | "ready" | "error";
 
+type ProfileRecord = { id?: unknown; display_name?: unknown; avatar_url?: unknown };
+
+function extractProfile(payload: unknown): { id: string; display_name: string | null; avatar_url: string | null } | null {
+  const source = Array.isArray(payload) ? payload[0] : payload;
+  if (!source || typeof source !== "object") {
+    return null;
+  }
+  const record = source as ProfileRecord;
+  const id = record.id;
+  if (typeof id !== "string") {
+    return null;
+  }
+  const displayName = typeof record.display_name === "string" ? record.display_name : null;
+  const avatarUrl = typeof record.avatar_url === "string" ? record.avatar_url : null;
+  return { id, display_name: displayName, avatar_url: avatarUrl };
+}
+
 function mapRecordToPost(record: Record<string, unknown>): FeedPost | null {
   const id = record["id"];
   const createdAt = record["created_at"];
@@ -38,17 +55,10 @@ function mapRecordToPost(record: Record<string, unknown>): FeedPost | null {
   const likesRaw = record["likes"];
   const commentsRaw = record["comments"];
   const authorIdRaw = record["author_id"];
-  const profileRaw = record["profiles"];
-  let author: FeedPost["author"] = null;
+  const profile = extractProfile(record["profiles"]);
+  let author: FeedPost["author"] = profile ?? null;
   if (typeof authorIdRaw === "string") {
-    if (profileRaw && typeof profileRaw === "object") {
-      const profile = profileRaw as { id?: string; display_name?: string | null; avatar_url?: string | null };
-      author = {
-        id: typeof profile.id === "string" ? profile.id : authorIdRaw,
-        display_name: typeof profile.display_name === "string" ? profile.display_name : null,
-        avatar_url: typeof profile.avatar_url === "string" ? profile.avatar_url : null,
-      };
-    } else {
+    if (!author) {
       author = {
         id: authorIdRaw,
         display_name: null,
@@ -205,6 +215,7 @@ export default function AkisPage() {
         .from('posts')
         .select(`
           id,
+          author_id,
           content,
           created_at,
           image_url,
@@ -226,13 +237,16 @@ export default function AkisPage() {
         image_url: typeof row.image_url === 'string' ? (row.image_url as string) : null,
         likes: Number(row.post_likes?.[0]?.count ?? 0),
         comments: Number(row.post_comments?.[0]?.count ?? 0),
-        author: (row as { profiles?: { id: string; display_name: string | null; avatar_url: string | null } }).profiles
-          ? {
-              id: String((row.profiles as { id: string }).id),
-              display_name: (row.profiles as { display_name: string | null }).display_name ?? null,
-              avatar_url: (row.profiles as { avatar_url: string | null }).avatar_url ?? null,
-            }
-          : null,
+        author: (() => {
+          const profile = extractProfile((row as { profiles?: unknown }).profiles);
+          if (profile) {
+            return profile;
+          }
+          const authorId = (row as { author_id?: unknown }).author_id;
+          return typeof authorId === 'string'
+            ? { id: authorId, display_name: null, avatar_url: null }
+            : null;
+        })(),
       }));
       setPosts(normalizePosts(mapped));
 
@@ -360,6 +374,7 @@ export default function AkisPage() {
       .select(`
         id,
         post_id,
+        author_id,
         content,
         created_at,
         profiles:author_id (
@@ -381,19 +396,18 @@ export default function AkisPage() {
       setComments((prev) => [fallback, ...prev]);
       return;
     }
-    const profile = (data as { profiles?: { id: string; display_name: string | null; avatar_url: string | null } }).profiles;
+    const profile = extractProfile((data as { profiles?: unknown }).profiles);
+    const authorId = (data as { author_id?: unknown }).author_id;
     const mapped: FeedComment = {
       id: String(data.id),
       post_id: String(data.post_id),
       content: String(data.content ?? ''),
       created_at: String(data.created_at),
       author: profile
-        ? {
-            id: String(profile.id),
-            display_name: profile.display_name ?? null,
-            avatar_url: profile.avatar_url ?? null,
-          }
-        : null,
+        ? profile
+        : typeof authorId === 'string'
+            ? { id: authorId, display_name: null, avatar_url: null }
+            : null,
     };
     setComments((prev) => [mapped, ...prev]);
   }, [commentTarget]);
@@ -491,6 +505,7 @@ export default function AkisPage() {
       .select(`
         id,
         post_id,
+        author_id,
         content,
         created_at,
         profiles:author_id (
@@ -508,19 +523,18 @@ export default function AkisPage() {
       return;
     }
     const typed = (data ?? []).map((row) => {
-      const profile = (row as { profiles?: { id: string; display_name: string | null; avatar_url: string | null } }).profiles;
+      const profile = extractProfile((row as { profiles?: unknown }).profiles);
+      const authorId = (row as { author_id?: unknown }).author_id;
       return {
         id: String(row.id),
         post_id: String(row.post_id),
         content: String(row.content ?? ''),
         created_at: String(row.created_at),
         author: profile
-          ? {
-              id: String(profile.id),
-              display_name: profile.display_name ?? null,
-              avatar_url: profile.avatar_url ?? null,
-            }
-          : null,
+          ? profile
+          : typeof authorId === 'string'
+              ? { id: authorId, display_name: null, avatar_url: null }
+              : null,
       } satisfies FeedComment;
     });
     setComments(typed);
@@ -552,6 +566,7 @@ export default function AkisPage() {
       .select(`
         id,
         post_id,
+        author_id,
         content,
         created_at,
         profiles:author_id (
@@ -567,19 +582,18 @@ export default function AkisPage() {
       return;
     }
     if (data) {
-      const profile = (data as { profiles?: { id: string; display_name: string | null; avatar_url: string | null } }).profiles;
+      const profile = extractProfile((data as { profiles?: unknown }).profiles);
+      const authorId = (data as { author_id?: unknown }).author_id;
       const newComment: FeedComment = {
         id: String(data.id),
         post_id: String(data.post_id),
         content: String(data.content ?? ''),
         created_at: String(data.created_at),
         author: profile
-          ? {
-              id: String(profile.id),
-              display_name: profile.display_name ?? null,
-              avatar_url: profile.avatar_url ?? null,
-            }
-          : null,
+          ? profile
+          : typeof authorId === 'string'
+              ? { id: authorId, display_name: null, avatar_url: null }
+              : null,
       };
       setComments((prev) => [newComment, ...prev]);
       setCommentContent('');
