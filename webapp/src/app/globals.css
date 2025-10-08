@@ -1,9 +1,12 @@
 @import "tailwindcss";
-@plugin "daisyui";
+@plugin "daisyui" {
+  exclude: properties;
+}
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --radialprogress: 0%;
 }
 
 @theme inline {

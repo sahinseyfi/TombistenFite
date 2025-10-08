@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import type { ReactNode } from "react";
 import "./globals.css";
@@ -19,7 +19,6 @@ export const metadata: Metadata = {
   title: "TombistenFite",
   description: "Mobil odaklı MVP",
   applicationName: "TombistenFite",
-  themeColor: '#0f172a',
   manifest: '/manifest.json',
   icons: {
     icon: ['/icons/icon.svg'],
@@ -30,6 +29,10 @@ export const metadata: Metadata = {
     statusBarStyle: 'default',
     title: 'TombistenFite',
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0f172a',
 };
 
 export default function RootLayout({
