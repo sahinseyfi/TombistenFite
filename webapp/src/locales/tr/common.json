@@ -90,5 +90,6 @@
   "feed.comments.login": "Yorum yapmak için giriş yap.",
   "feed.comments.login_cta": "Giriş yap",
   "feed.comments.error_empty": "Yorum içeriği gerekli.",
-  "feed.comments.open": "Yorumları aç"
+  "feed.comments.open": "Yorumları aç",
+  "feed.author.unknown": "Bilinmeyen yazar"
 }

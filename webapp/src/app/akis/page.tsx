@@ -14,12 +14,15 @@ type FeedPost = {
   image_url?: string | null;
   likes: number;
   comments: number;
+  author: { id: string; display_name: string | null; avatar_url: string | null } | null;
 };
 
 type FeedComment = {
   id: string;
+  post_id: string;
   content: string;
   created_at: string;
+  author: { id: string; display_name: string | null; avatar_url: string | null } | null;
 };
 
 type FetchState = "loading" | "ready" | "error";
@@ -34,6 +37,25 @@ function mapRecordToPost(record: Record<string, unknown>): FeedPost | null {
   const imageRaw = record["image_url"];
   const likesRaw = record["likes"];
   const commentsRaw = record["comments"];
+  const authorIdRaw = record["author_id"];
+  const profileRaw = record["profiles"];
+  let author: FeedPost["author"] = null;
+  if (typeof authorIdRaw === "string") {
+    if (profileRaw && typeof profileRaw === "object") {
+      const profile = profileRaw as { id?: string; display_name?: string | null; avatar_url?: string | null };
+      author = {
+        id: typeof profile.id === "string" ? profile.id : authorIdRaw,
+        display_name: typeof profile.display_name === "string" ? profile.display_name : null,
+        avatar_url: typeof profile.avatar_url === "string" ? profile.avatar_url : null,
+      };
+    } else {
+      author = {
+        id: authorIdRaw,
+        display_name: null,
+        avatar_url: null,
+      };
+    }
+  }
   return {
     id,
     content: typeof contentRaw === "string" ? contentRaw : null,
@@ -41,6 +63,7 @@ function mapRecordToPost(record: Record<string, unknown>): FeedPost | null {
     image_url: typeof imageRaw === "string" ? imageRaw : null,
     likes: typeof likesRaw === "number" ? likesRaw : 0,
     comments: typeof commentsRaw === "number" ? commentsRaw : 0,
+    author,
   };
 }
 
@@ -104,6 +127,14 @@ async function compressImageFile(original: File): Promise<File> {
     console.error("Gorsel sikistirma basarisiz", error);
     return original;
   }
+}
+
+function getInitials(name: string | null): string {
+  if (!name) return 'TF';
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'TF';
+  const initials = parts.slice(0, 2).map((part) => part.charAt(0).toUpperCase()).join('');
+  return initials || 'TF';
 }
 
 export default function AkisPage() {
@@ -172,7 +203,15 @@ export default function AkisPage() {
     try {
       const { data, error } = await supabase
         .from('posts')
-        .select('id, content, created_at, image_url, post_likes(count), post_comments(count)')
+        .select(`
+          id,
+          content,
+          created_at,
+          image_url,
+          post_likes(count),
+          post_comments(count),
+          profiles:author_id ( id, display_name, avatar_url )
+        `)
         .order('created_at', { ascending: false })
         .limit(MAX_POSTS);
       if (error) {
@@ -187,6 +226,13 @@ export default function AkisPage() {
         image_url: typeof row.image_url === 'string' ? (row.image_url as string) : null,
         likes: Number(row.post_likes?.[0]?.count ?? 0),
         comments: Number(row.post_comments?.[0]?.count ?? 0),
+        author: (row as { profiles?: { id: string; display_name: string | null; avatar_url: string | null } }).profiles
+          ? {
+              id: String((row.profiles as { id: string }).id),
+              display_name: (row.profiles as { display_name: string | null }).display_name ?? null,
+              avatar_url: (row.profiles as { avatar_url: string | null }).avatar_url ?? null,
+            }
+          : null,
       }));
       setPosts(normalizePosts(mapped));
 
@@ -214,39 +260,33 @@ export default function AkisPage() {
   }, [normalizePosts, markReady, userId]);
 
   const upsertPost = useCallback(
-
     (incoming: FeedPost, options?: { highlight?: boolean; preserveCounts?: boolean }) => {
-
       setPosts((prev) => {
-
         const existing = prev.find((post) => post.id === incoming.id);
-
         const preserveCounts = options?.preserveCounts ?? true;
-
-        const nextPost: FeedPost = preserveCounts && existing
-
-          ? { ...incoming, likes: existing.likes, comments: existing.comments }
-
-          : incoming;
-
+        const nextPost: FeedPost = (() => {
+          if (preserveCounts && existing) {
+            return {
+              ...incoming,
+              likes: existing.likes,
+              comments: existing.comments,
+              author: incoming.author ?? existing.author,
+            };
+          }
+          return {
+            ...incoming,
+            author: incoming.author ?? existing?.author ?? null,
+          };
+        })();
         const filtered = prev.filter((post) => post.id !== incoming.id);
-
         return normalizePosts([nextPost, ...filtered]);
-
       });
-
       if (options?.highlight) {
-
         addHighlight(incoming.id);
-
       }
-
       markReady();
-
     },
-
     [normalizePosts, markReady, addHighlight],
-
   );
 
 
@@ -298,7 +338,7 @@ export default function AkisPage() {
     );
   }, []);
 
-  const handleCommentInsertRealtime = useCallback((comment: FeedComment & { post_id: string }) => {
+  const handleCommentInsertRealtime = useCallback(async (comment: { id: string; post_id: string; content: string | null; created_at: string }) => {
     setPosts((prev) =>
       prev.map((post) =>
         post.id === comment.post_id
@@ -311,9 +351,51 @@ export default function AkisPage() {
         ? { ...current, comments: current.comments + 1 }
         : current,
     );
-    setComments((prev) =>
-      commentTarget && commentTarget.id === comment.post_id ? [comment, ...prev] : prev,
-    );
+    const currentTargetId = commentTarget?.id;
+    if (!currentTargetId || currentTargetId !== comment.post_id) {
+      return;
+    }
+    const { data } = await supabase
+      .from('post_comments')
+      .select(`
+        id,
+        post_id,
+        content,
+        created_at,
+        profiles:author_id (
+          id,
+          display_name,
+          avatar_url
+        )
+      `)
+      .eq('id', comment.id)
+      .single();
+    if (!data) {
+      const fallback: FeedComment = {
+        id: comment.id,
+        post_id: comment.post_id,
+        content: comment.content ?? '',
+        created_at: comment.created_at,
+        author: null,
+      };
+      setComments((prev) => [fallback, ...prev]);
+      return;
+    }
+    const profile = (data as { profiles?: { id: string; display_name: string | null; avatar_url: string | null } }).profiles;
+    const mapped: FeedComment = {
+      id: String(data.id),
+      post_id: String(data.post_id),
+      content: String(data.content ?? ''),
+      created_at: String(data.created_at),
+      author: profile
+        ? {
+            id: String(profile.id),
+            display_name: profile.display_name ?? null,
+            avatar_url: profile.avatar_url ?? null,
+          }
+        : null,
+    };
+    setComments((prev) => [mapped, ...prev]);
   }, [commentTarget]);
 
   const handleCommentDeleteRealtime = useCallback((commentId: string, postId: string) => {
@@ -336,7 +418,7 @@ export default function AkisPage() {
     onPostChange: handlePostUpdate,
     onPostDelete: removePost,
     onLikeToggle: handleLikeToggleRealtime,
-    onCommentInsert: (comment) => handleCommentInsertRealtime({ ...comment }),
+    onCommentInsert: handleCommentInsertRealtime,
     onCommentDelete: handleCommentDeleteRealtime,
   });
 
@@ -398,6 +480,7 @@ export default function AkisPage() {
       image_url: post.image_url,
       likes: post.likes,
       comments: post.comments,
+      author: post.author ?? null,
     });
     setComments([]);
     setCommentContent('');
@@ -405,7 +488,17 @@ export default function AkisPage() {
     setCommentsLoading(true);
     const { data, error } = await supabase
       .from('post_comments')
-      .select('id, content, created_at')
+      .select(`
+        id,
+        post_id,
+        content,
+        created_at,
+        profiles:author_id (
+          id,
+          display_name,
+          avatar_url
+        )
+      `)
       .eq('post_id', post.id)
       .order('created_at', { ascending: false })
       .limit(50);
@@ -414,11 +507,22 @@ export default function AkisPage() {
       setCommentError(error.message);
       return;
     }
-    const typed = (data ?? []).map((row) => ({
-      id: String(row.id),
-      content: String(row.content ?? ''),
-      created_at: String(row.created_at),
-    }));
+    const typed = (data ?? []).map((row) => {
+      const profile = (row as { profiles?: { id: string; display_name: string | null; avatar_url: string | null } }).profiles;
+      return {
+        id: String(row.id),
+        post_id: String(row.post_id),
+        content: String(row.content ?? ''),
+        created_at: String(row.created_at),
+        author: profile
+          ? {
+              id: String(profile.id),
+              display_name: profile.display_name ?? null,
+              avatar_url: profile.avatar_url ?? null,
+            }
+          : null,
+      } satisfies FeedComment;
+    });
     setComments(typed);
   }, []);
 
@@ -445,7 +549,17 @@ export default function AkisPage() {
     const { data, error } = await supabase
       .from('post_comments')
       .insert({ post_id: commentTarget.id, author_id: userId, content: trimmed })
-      .select('id, content, created_at')
+      .select(`
+        id,
+        post_id,
+        content,
+        created_at,
+        profiles:author_id (
+          id,
+          display_name,
+          avatar_url
+        )
+      `)
       .single();
     setCommentPosting(false);
     if (error) {
@@ -453,10 +567,19 @@ export default function AkisPage() {
       return;
     }
     if (data) {
+      const profile = (data as { profiles?: { id: string; display_name: string | null; avatar_url: string | null } }).profiles;
       const newComment: FeedComment = {
         id: String(data.id),
+        post_id: String(data.post_id),
         content: String(data.content ?? ''),
         created_at: String(data.created_at),
+        author: profile
+          ? {
+              id: String(profile.id),
+              display_name: profile.display_name ?? null,
+              avatar_url: profile.avatar_url ?? null,
+            }
+          : null,
       };
       setComments((prev) => [newComment, ...prev]);
       setCommentContent('');
@@ -811,6 +934,28 @@ export default function AkisPage() {
                 {isHighlighted && (
                   <span className="badge badge-primary badge-xs w-fit">{t('feed.realtime.new')}</span>
                 )}
+                <div className="flex items-center gap-3 text-sm text-base-content/70">
+                  <div className="avatar">
+                    <div className="h-10 w-10 overflow-hidden rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold">
+                      {post.author?.avatar_url ? (
+                        <Image
+                          src={post.author.avatar_url}
+                          alt={post.author.display_name ?? t('feed.author.unknown')}
+                          width={40}
+                          height={40}
+                          className="h-10 w-10 rounded-full object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <span>{getInitials(post.author?.display_name ?? null)}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-medium text-base-content">{post.author?.display_name ?? t('feed.author.unknown')}</span>
+                    <span className="text-[11px] text-base-content/60">{post.createdLabel}</span>
+                  </div>
+                </div>
                 {post.image_url && (
                   <div className="overflow-hidden rounded-lg border border-base-200">
                     <Image
@@ -882,11 +1027,32 @@ export default function AkisPage() {
               <p className="text-sm text-base-content/60">{t('feed.comments.empty')}</p>
             )}
             {!commentsLoading && comments.map((comment) => (
-              <div key={comment.id} className="rounded-lg border border-base-200 p-3 text-sm">
-                <p className="whitespace-pre-wrap">{comment.content}</p>
-                <p className="mt-1 text-[11px] text-base-content/50">
-                  {commentFormatter.format(new Date(comment.created_at))}
-                </p>
+              <div key={comment.id} className="rounded-lg border border-base-200 p-3 text-sm space-y-2">
+                <div className="flex items-center gap-3 text-sm text-base-content/70">
+                  <div className="avatar">
+                    <div className="h-8 w-8 overflow-hidden rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold">
+                      {comment.author?.avatar_url ? (
+                        <Image
+                          src={comment.author.avatar_url}
+                          alt={comment.author.display_name ?? t('feed.author.unknown')}
+                          width={32}
+                          height={32}
+                          className="h-8 w-8 rounded-full object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <span>{getInitials(comment.author?.display_name ?? null)}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-medium text-base-content">{comment.author?.display_name ?? t('feed.author.unknown')}</span>
+                    <span className="text-[11px] text-base-content/60">{commentFormatter.format(new Date(comment.created_at))}</span>
+                  </div>
+                </div>
+                {comment.content && (
+                  <p className="whitespace-pre-wrap text-sm text-base-content">{comment.content}</p>
+                )}
               </div>
             ))}
           </div>
