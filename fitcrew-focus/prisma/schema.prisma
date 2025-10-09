@@ -1,0 +1,237 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+}
+
+enum PostVisibility {
+  PUBLIC
+  FOLLOWERS
+  PRIVATE
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+}
+
+enum FollowStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum AiCommentStatus {
+  IDLE
+  PENDING
+  READY
+  FAILED
+}
+
+enum TreatPortion {
+  SMALL
+  MEDIUM
+  FULL
+}
+
+enum NotificationType {
+  LIKE
+  COMMENT
+  FOLLOW
+  AI_COMMENT_READY
+}
+
+model User {
+  id                String           @id @default(cuid())
+  handle            String           @unique @db.VarChar(32)
+  name              String           @db.VarChar(120)
+  email             String?          @unique
+  phone             String?          @unique
+  passwordHash      String           @db.VarChar(255)
+  avatarUrl         String?
+  bio               String?          @db.VarChar(280)
+  defaultVisibility PostVisibility   @default(PUBLIC)
+  aiCommentDefault  Boolean          @default(true)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  posts        Post[]
+  comments     Comment[]
+  measurements Measurement[]
+  treatItems   TreatItem[]
+  treatSpins   TreatSpin[]
+  followers    Follow[]             @relation("Followee")
+  following    Follow[]             @relation("Follower")
+  postLikes    PostLike[]
+  postReports  PostReport[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model Post {
+  id                 String           @id @default(cuid())
+  authorId           String
+  measurementId      String?          @unique
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  photos             String[]         @default([])
+  caption            String?          @db.VarChar(500)
+  mealType           MealType?
+  weightKg           Decimal?         @db.Decimal(5, 2)
+  visibility         PostVisibility   @default(PUBLIC)
+  aiCommentStatus    AiCommentStatus  @default(IDLE)
+  aiCommentSummary   String?          @db.VarChar(500)
+  aiCommentTips      String[]         @default([])
+  aiCommentUpdatedAt DateTime?
+  aiCommentError     String?          @db.VarChar(255)
+  likesCount         Int              @default(0)
+  commentsCount      Int              @default(0)
+  aiCommentRequested Boolean          @default(false)
+
+  author      User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  measurement Measurement? @relation("PostMeasurement", fields: [measurementId], references: [id], onDelete: SetNull)
+  comments    Comment[]
+  likes       PostLike[]
+  reports     PostReport[]
+
+  @@index([authorId, createdAt], map: "idx_posts_author_created")
+  @@index([visibility, createdAt], map: "idx_posts_visibility_created")
+  @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  authorId  String
+  body      String   @db.VarChar(1000)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+  @@map("comments")
+}
+
+model Follow {
+  followerId String
+  followeeId String
+  status     FollowStatus @default(ACCEPTED)
+  isCloseFriend Boolean    @default(false)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  follower User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followee User @relation("Followee", fields: [followeeId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followeeId])
+  @@unique([followeeId, followerId], map: "idx_follows_unique")
+  @@index([followerId, status], map: "idx_follows_follower")
+  @@map("follows")
+}
+
+model Measurement {
+  id        String    @id @default(cuid())
+  userId    String
+  date      DateTime
+  weightKg  Decimal?  @db.Decimal(5, 2)
+  waistCm   Decimal?  @db.Decimal(5, 2)
+  chestCm   Decimal?  @db.Decimal(5, 2)
+  hipCm     Decimal?  @db.Decimal(5, 2)
+  armCm     Decimal?  @db.Decimal(5, 2)
+  thighCm   Decimal?  @db.Decimal(5, 2)
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post? @relation("PostMeasurement")
+
+  @@index([userId, date], map: "idx_measurements_user_date")
+  @@map("measurements")
+}
+
+model PostLike {
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([postId, userId])
+  @@index([userId])
+  @@map("post_likes")
+}
+
+model PostReport {
+  id         String   @id @default(cuid())
+  postId     String
+  reporterId String
+  reason     String   @db.VarChar(120)
+  details    String?  @db.VarChar(500)
+  createdAt  DateTime @default(now())
+
+  post     Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reporter User @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+  @@map("post_reports")
+}
+
+model TreatItem {
+  id        String         @id @default(cuid())
+  userId    String
+  name      String         @db.VarChar(120)
+  photoUrl  String?
+  kcalHint  String?        @db.VarChar(120)
+  portions  TreatPortion[] @default([])
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spins TreatSpin[]
+
+  @@index([userId, createdAt])
+  @@map("treat_items")
+}
+
+model TreatSpin {
+  id                  String       @id @default(cuid())
+  userId              String
+  treatItemId         String?
+  treatNameSnapshot   String       @db.VarChar(120)
+  photoUrlSnapshot    String?
+  kcalHintSnapshot    String?      @db.VarChar(120)
+  spunAt              DateTime     @default(now())
+  portion             TreatPortion
+  bonusWalkMin        Int
+  bonusCompleted      Boolean      @default(false)
+  createdAt           DateTime     @default(now())
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  treatItem TreatItem? @relation(fields: [treatItemId], references: [id], onDelete: SetNull)
+
+  @@index([userId, spunAt])
+  @@map("treat_spins")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  payload   Json
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt], map: "idx_notifications_user_read")
+  @@map("notifications")
+}
