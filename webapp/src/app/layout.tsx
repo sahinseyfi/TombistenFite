@@ -32,6 +32,9 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
   themeColor: '#0f172a',
 };
 
@@ -42,9 +45,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr" data-theme="light">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-dvh pb-16 bg-base-100 text-base-content`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-dvh bg-base-100 text-base-content`}>
         <ThemeProvider>
-          <div className="container mx-auto px-4 pt-4">{children}</div>
+          <div className="mx-auto max-w-screen-sm md:max-w-screen-md px-4 pt-4 pt-safe px-safe pb-btm-nav">{children}</div>
           {/* Alt Navigasyon */}
           <div className="fixed inset-x-0 bottom-0 z-50">
             <BottomNav />

@@ -52,6 +52,12 @@ Bu belge, bu depoya katkıda bulunurken uyulacak kuralları özetler. Varsayıla
 - Tasarım önceliği mobil cihazlar; masaüstü için yalnızca basit, akıcı genişleme yeterlidir.
 - Bileşenler: mobil navigasyon (alt çubuk), kart tabanlı akış, form elemanları, diyalog/alt çekmece.
 
+### Mobil UX/UI Referans (Zorunlu)
+- Bağlayıcı kılavuz: `docs/UX_MOBILE_GUIDE.md`
+- Tüm yeni ekranlar ve görsel revizyonlarda bu kılavuz uygulanmalıdır.
+- PR açıklamasına “Mobil UX Checklist” (kılavuzdaki bölüm) kopyalanıp işaretlenmelidir.
+- iPhone güvenli alanları (safe area) için kılavuzdaki `viewport-fit=cover` ve `pt-safe`/`pb-safe` yardımcıları kullanılmalıdır.
+
 ## Yol Haritası
 - Güncel yol haritası: `docs/ROADMAP.md`
 - Ajan, bu dosyayı tek doğruluk kaynağı olarak kabul eder ve yeni çalışmalarla birlikte günceller.

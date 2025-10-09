@@ -143,3 +143,4 @@ Bu yol haritası; mobil odaklı Next.js (App Router) + Tailwind CSS + DaisyUI ar
 - Realtime bağlantısı hata aldığında kullanıcıya uyarı gösterilip yeniden bağlanma seçeneği sunuluyor; yeni gönderiler rozetle vurgulanıyor.
 - Akış kartları beğeni/yorum sayaçları ve mobil yorum paneli ile etkileşim odaklı hale getirildi.
 - PWA manifesti ve maskable ikonlar eklendi; uygulama ana ekrana eklenmek için uygun hale getirildi.
+ - Mobil UX/UI referans kılavuzu eklendi: `docs/UX_MOBILE_GUIDE.md`. PR'larda “Mobil UX Checklist” zorunlu tutulacaktır; iPhone güvenli alanları (safe area) için `viewport-fit=cover` ve `pt-safe`/`pb-safe` yardımcıları uygulanacaktır.
