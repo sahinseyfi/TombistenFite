@@ -1,46 +1,53 @@
-# TombistenFite - Ortam Degiskenleri ve Otomasyon
+# TombistenFite · FitCrew Focus Uygulaması
 
-Bu depoda gizli anahtarlari repo disinda tutarak Vercel, Supabase ve GitHub ile hizli entegrasyon icin komut dosyalari eklendi.
+Bu depo, Lovable üzerinden oluşturulan **FitCrew Focus** Next.js (App Router) + Prisma backend uygulamasının kaynak kodunu ve yardımcı otomasyon komutlarını barındırır. Varsayılan dil Türkçe'dir ve mobil öncelikli UX, `docs/UX_MOBILE_GUIDE.md` kılavuzuna göre ilerletilir.
 
-## Hizli Baslangic
+## Hızlı Başlangıç
 
-1) Ortam dosyasini olusturun (gercek degerleri doldurun):
-- `webapp/.env.local` dosyasini `webapp/.env.local.example` temel alinerek olusturun.
-- Bu dosya Git tarafindan zaten yok sayiliyor.
+1. Ortam değişkenleri
+   - `fitcrew-focus/.env.local` dosyasını `fitcrew-focus/.env.example` dosyasını referans alarak oluşturun.
+   - Gizli anahtarları commit etmeyin; dosya `.gitignore` içinde yok sayılır.
 
-2) Opsiyonel: Supabase CLI oturumu acin
-- `make supabase:login`
+2. Bağımlılık kurulumu
+   - `make setup` (veya manuel olarak `pnpm install --dir fitcrew-focus`).
 
-3) Vercel proje ortam degiskenlerini senkronize edin
-- `make env:vercel:push`
-- Not: `VERCEL_TOKEN` degiskeni calisma zamani ortama gonderilmez (CLI amaca yonelik; deploy icin gerekli degil). Diger anahtarlar `development/preview/production` icin ayarlanir.
+3. Geliştirme ve doğrulama
+   - `make dev` → `pnpm dev` (Next.js local)
+   - `make lint` → `pnpm lint`
+   - `make typecheck` → `pnpm typecheck`
+   - `make test` → `pnpm test` (Vitest)
+   - `make format` → `pnpm format`
 
-4) GitHub repository secrets ayarlayin
-- `gh auth login` ile oturum acin (bir kez). Ardindan:
-- `make env:github:push`
+4. Dağıtım / otomasyon
+   - `make vercel:deploy` → Vercel production deploy (`.vercel/project.json` kök dizinde).
+   - `make env:vercel:push` → `.env.local` içeriğini Vercel envlerine senkronize eder.
+   - `make env:github:push` → GitHub secrets senkronizasyonu (GitHub CLI gerektirir).
+   - `make supabase:login` → Supabase CLI ile oturum açma, diğer Supabase yardımcıları için ön koşul.
 
-## Kurulum ve Calistirma
-- Bagimliliklar: `make setup`
-- Gelistirme: `make dev`
-- Derleme: `make build`
-- Test: `make test` (Vitest + Testing Library)
-- Format: `make format` (Prettier + Tailwind plugin)
+## Proje Yapısı
 
-## Guvenlik
-- Gercek tokenlari kesinlikle commit etmeyin. `.env.local` Git'e dahil edilmez.
-- Script'ler degerleri stdin ile gecirir; konsolda gizli degeri yazdirmaz.
+- `fitcrew-focus/` → Lovable tarafından üretilen Next.js + Prisma tam yığın uygulama.
+- `docs/` → Yol haritası, mobil UX kılavuzu ve transkriptler.
+- `scripts/` → Vercel/GitHub/Supabase otomasyon komutları (env dosyasını `fitcrew-focus/.env.local` varsayar).
+- `supabase/` → CLI yapılandırması ve ek araçlar.
 
-## Notlar
-- Supabase uygulama anahtarlari (URL/ANON KEY) yoksa, Supabase projesi olusturup bunlari `webapp/.env.local` dosyasina ekleyin.
-- GitHub secrets icin `gh` oturumu gerekli; tokenlar repo secrets olarak kaydedilir.
-- Vercel proje linki `.vercel/project.json` ile zaten mevcut; script ayni proje kapsaminda calisir.
-- Kok dizindeki `npm run build`, `npm run dev` vb. komutlar `webapp/` altindaki Next.js uygulamasini tetikler; Vercel build/preview adimlari da bu komutlara dayanir.
+> Not: Önceki `webapp/` tabanlı arayüz kaldırıldı; artık tüm geliştirme `fitcrew-focus/` dizini üzerinden yürütülür.
 
-## CI
-- GitHub Actions hattı `.github/workflows/ci.yml` içinde tanımlıdır.
-- Lint/Test/Build adımları Node 20 üzerinde çalışır.
-- Vercel önizleme dağıtımı için repo secret'ları olarak `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` değerlerini tanımlayın.
+## Güvenlik ve İyileştirme Notları
 
-## PWA
-- Manifest ve ikonlar varsayılan olarak `/icons` altında tanımlıdır.
-- Üretim dağıtımında uygulamayı ana ekrana ekleyerek kısayolu test edebilirsin.
+- Supabase ve AWS/S3 kimlik bilgilerini `.env.local` içinde tutun, paylaşımla veya commit ile dışarı taşımayın.
+- Komut dosyaları, hassas değerleri stdout'a yazmadan stdin ile ilgili servislere aktarır.
+- Prisma migration’larını çalıştırmadan önce `.env.local` içindeki veritabanı bağlantı ayarlarını güncellediğinizden emin olun.
+- Mobil UX gereklilikleri için `docs/UX_MOBILE_GUIDE.md` ve `docs/ROADMAP.md` dosyalarındaki maddeler bağlayıcıdır.
+
+## CI / CD
+
+- `.github/workflows/ci.yml` lint + build adımlarını çalıştırır; `pnpm` kullanımı varsayılır.
+- Vercel dağıtımı için gerekli secret'lar: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
+- Supabase entegrasyonları için CLI oturumunuzun güncel olduğundan emin olun (`make supabase:login`).
+
+## Destekleyici Kaynaklar
+
+- Mobil UX yönergeleri: `docs/UX_MOBILE_GUIDE.md`
+- Yol haritası: `docs/ROADMAP.md`
+- Ajan çalışma kuralları: `AGENTS.md`

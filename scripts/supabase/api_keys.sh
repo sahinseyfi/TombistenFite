@@ -4,7 +4,7 @@ set -euo pipefail
 # Prints Supabase project API keys (anon/service_role) without storing them.
 # Usage: scripts/supabase/api_keys.sh [env-file] [project-ref]
 
-ENV_FILE=${1:-webapp/.env.local}
+ENV_FILE=${1:-fitcrew-focus/.env.local}
 PROJECT_REF=${2:-}
 
 if [ ! -f "$ENV_FILE" ]; then
@@ -24,9 +24,8 @@ if [ -z "$PROJECT_REF" ]; then
 fi
 
 if [ -z "$PROJECT_REF" ]; then
-  echo "Hata: Proje ref bulunamadı. Elle parametre olarak geçin: scripts/supabase/api_keys.sh webapp/.env.local <project-ref>" >&2
+  echo "Hata: Proje ref bulunamadı. Elle parametre olarak geçin: scripts/supabase/api_keys.sh fitcrew-focus/.env.local <project-ref>" >&2
   exit 1
 fi
 
 supabase projects api-keys --project-ref "$PROJECT_REF" -o pretty
-

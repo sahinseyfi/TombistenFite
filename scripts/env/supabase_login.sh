@@ -3,12 +3,12 @@ set -euo pipefail
 
 # Logs into Supabase CLI using SUPABASE_ACCESS_TOKEN from env file.
 # Usage: scripts/env/supabase_login.sh [path-to-env]
-# Default env file: webapp/.env.local
+# Default env file: fitcrew-focus/.env.local
 
-ENV_FILE=${1:-webapp/.env.local}
+ENV_FILE=${1:-fitcrew-focus/.env.local}
 
 if [ ! -f "$ENV_FILE" ]; then
-  echo "Hata: $ENV_FILE bulunamadı. Lütfen webapp/.env.local dosyasını oluşturun." >&2
+  echo "Hata: $ENV_FILE bulunamadı. Lütfen fitcrew-focus/.env.local dosyasını oluşturun." >&2
   exit 1
 fi
 
@@ -34,4 +34,3 @@ fi
 # Use --token flag; the value is not printed, and we don't echo it anywhere
 supabase login --no-browser --yes --token "$SUPABASE_TOKEN" >/dev/null
 echo "Supabase CLI: Oturum açıldı."
-

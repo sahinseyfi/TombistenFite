@@ -4,11 +4,11 @@
   "projectName": "tombistenfite",
   "settings": {
     "framework": "nextjs",
-    "devCommand": "npm run dev",
-    "installCommand": "npm install",
-    "buildCommand": "npm run build",
+    "devCommand": "pnpm dev",
+    "installCommand": "pnpm install",
+    "buildCommand": "pnpm build",
     "outputDirectory": null,
-    "rootDirectory": "webapp",
+    "rootDirectory": "fitcrew-focus",
     "directoryListing": false,
     "nodeVersion": "22.x"
   }

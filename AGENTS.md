@@ -14,6 +14,7 @@ Bu belge, bu depoya katkıda bulunurken uyulacak kuralları özetler. Varsayıla
 - `make dev` — yerel geliştirme/izleme. Örn: `npm run dev`, `dotnet watch run`.
 - `make test` — birim testlerini çalıştırır. Örn: `npm test`, `pytest`, `dotnet test`.
 - `make build` — üretim paketleri oluşturur. Örn: `npm run build`, `python -m build`, `dotnet build -c Release`.
+- Mevcut kod tabanı `fitcrew-focus/` dizininde yer alır ve `pnpm` komutlarına dayanır; Makefile hedefleri bu dizini otomatik kullanır.
 
 ## Kodlama Stili ve İsimlendirme
 - `.editorconfig`e uyun. Varsayılanlar: JS/TS 2 boşluk; Python/C# 4 boşluk; UTF-8, LF.

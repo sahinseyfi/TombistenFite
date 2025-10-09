@@ -3,12 +3,12 @@ set -euo pipefail
 
 # Syncs variables from an .env file to Vercel Project envs (dev/preview/prod)
 # Usage: scripts/env/push_vercel_env.sh [path-to-env]
-# Default env file: webapp/.env.local
+# Default env file: fitcrew-focus/.env.local
 
-ENV_FILE=${1:-webapp/.env.local}
+ENV_FILE=${1:-fitcrew-focus/.env.local}
 
 if [ ! -f "$ENV_FILE" ]; then
-  echo "Hata: $ENV_FILE bulunamadı. Lütfen webapp/.env.local dosyasını oluşturun." >&2
+  echo "Hata: $ENV_FILE bulunamadı. Lütfen fitcrew-focus/.env.local dosyasını oluşturun." >&2
   exit 1
 fi
 
