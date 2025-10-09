@@ -6,6 +6,8 @@ Bu depo, Lovable üzerinden oluşturulan **FitCrew Focus** Next.js (App Router) 
 
 1. Ortam değişkenleri
    - `fitcrew-focus/.env.local` dosyasını `fitcrew-focus/.env.example` dosyasını referans alarak oluşturun.
+   - Var olan Supabase projenizin servis rolü Postgres bağlantısını `DATABASE_URL` / `DIRECT_URL` alanlarında kullanın.
+   - `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` değerlerini mevcut Vercel projesinden; `SUPABASE_ACCESS_TOKEN` değerini Supabase hesabınızdan alın.
    - Gizli anahtarları commit etmeyin; dosya `.gitignore` içinde yok sayılır.
 
 2. Bağımlılık kurulumu
@@ -19,7 +21,7 @@ Bu depo, Lovable üzerinden oluşturulan **FitCrew Focus** Next.js (App Router) 
    - `make format` → `pnpm format`
 
 4. Dağıtım / otomasyon
-   - `make vercel:deploy` → Vercel production deploy (`.vercel/project.json` kök dizinde).
+   - `make vercel:deploy` → Vercel production deploy (`.vercel/project.json` kök dizinde). Mevcut TombistenFite projesi linklidir; deploy öncesi `fitcrew-focus/.env.local` içindeki Vercel token'ı doğrulayın.
    - `make env:vercel:push` → `.env.local` içeriğini Vercel envlerine senkronize eder.
    - `make env:github:push` → GitHub secrets senkronizasyonu (GitHub CLI gerektirir).
    - `make supabase:login` → Supabase CLI ile oturum açma, diğer Supabase yardımcıları için ön koşul.
@@ -35,7 +37,8 @@ Bu depo, Lovable üzerinden oluşturulan **FitCrew Focus** Next.js (App Router) 
 
 ## Güvenlik ve İyileştirme Notları
 
-- Supabase ve AWS/S3 kimlik bilgilerini `.env.local` içinde tutun, paylaşımla veya commit ile dışarı taşımayın.
+- Supabase ve S3/Storage kimlik bilgilerini `.env.local` içinde tutun, paylaşımla veya commit ile dışarı taşımayın.
+- Supabase Postgres şemasını güncellemek için `pnpm --dir fitcrew-focus prisma:migrate deploy` komutunu çalıştırın (önce veritabanı yedeği almayı unutmayın).
 - Komut dosyaları, hassas değerleri stdout'a yazmadan stdin ile ilgili servislere aktarır.
 - Prisma migration’larını çalıştırmadan önce `.env.local` içindeki veritabanı bağlantı ayarlarını güncellediğinizden emin olun.
 - Mobil UX gereklilikleri için `docs/UX_MOBILE_GUIDE.md` ve `docs/ROADMAP.md` dosyalarındaki maddeler bağlayıcıdır.
