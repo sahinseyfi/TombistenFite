@@ -17,4 +17,4 @@ if [ -z "$VERCEL_TOKEN_VAL" ]; then
 fi
 
 # Use existing link in .vercel/project.json
-env VERCEL_TOKEN="$VERCEL_TOKEN_VAL" vercel --prod --confirm
+env VERCEL_TOKEN="$VERCEL_TOKEN_VAL" vercel --prod --yes
