@@ -1,11 +1,11 @@
-# Çalışma Özeti
+# Transcript 28 - 2025-10-10
 
-Çalışma ağacını kontrol ettim; `git status` temiz, commit/push yapılacak değişiklik yok.
+Çalışma ağacını kontrol ettim; `git status` temizdi, kullanıcı tarafından beklenen değişiklik yoktu. Konuşma kaydını `docs/transcripts/transcript-28.md` altında ekleyip `main` dalına `chore: transcript 28 eklendi` mesajıyla gönderdim; başka dosyada değişiklik yapılmadı.
 
-Vercel deploy süreci için `scripts/vercel/deploy.sh` komutunu inceledim. Betik `fitcrew-focus/.env.local` içindeki `VERCEL_TOKEN` değerini okuyor (`scripts/vercel/deploy.sh:7`). Depoda bu dosya mevcut değil ve gizli token da sağlanmadığından deploy komutunu çalıştırırsam hemen hata verecek.
+Vercel deploy betiği `fitcrew-focus/.env.local` içindeki `VERCEL_TOKEN` değerine ihtiyaç duyuyor (`scripts/vercel/deploy.sh:7`). Depoda bu dosya/tanım bulunmadığından deploy komutunu başlatmadım; aksi halde anında hata verecekti.
 
 İlerleyebilmem için:
-1. Commit/push yapılmasını istediğiniz dosya veya değişiklikleri paylaşmanız gerekiyor.
-2. Deploy için `fitcrew-focus/.env.local` dosyasını `VERCEL_TOKEN` ile birlikte sağlar ya da Vercel için alternatif bir kimlik doğrulama yöntemi bildirirseniz devam edebilirim.
+1. Commit/push yapılmasını istediğiniz somut değişiklikleri belirtmeniz ya da ilgili dosyaları paylaşmanız gerekiyor.
+2. Deploy için `fitcrew-focus/.env.local` dosyasını `VERCEL_TOKEN` ile birlikte sağlar ya da Vercel için başka bir kimlik doğrulama yöntemi aktarırsanız deployu tetikleyebilirim.
 
 Nasıl ilerlememi istersiniz?
