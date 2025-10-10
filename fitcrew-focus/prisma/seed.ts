@@ -1,5 +1,4 @@
 import {
-  Prisma,
   PrismaClient,
   TreatPortion,
   MealType,
@@ -61,9 +60,9 @@ async function main() {
     data: {
       userId: ayse.id,
       date: new Date(),
-      weightKg: new Prisma.Decimal(68.4),
-      waistCm: new Prisma.Decimal(72.3),
-      hipCm: new Prisma.Decimal(94.5),
+      weightKg: "68.4",
+      waistCm: "72.3",
+      hipCm: "94.5",
     },
   });
 
@@ -74,7 +73,7 @@ async function main() {
       photos: ["https://cdn.fitcrew.local/posts/ayse-breakfast.jpg"],
       caption: "Gune enerjik bir kahvalti ile basladim!",
       mealType: MealType.BREAKFAST,
-      weightKg: new Prisma.Decimal(68.4),
+      weightKg: "68.4",
       visibility: PostVisibility.FOLLOWERS,
       aiCommentStatus: AiCommentStatus.READY,
       aiCommentRequested: true,
