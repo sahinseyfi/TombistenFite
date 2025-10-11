@@ -1,9 +1,10 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/server/db";
 import { authenticate } from "@/server/auth/session";
 import { jsonError, jsonSuccess } from "@/server/api/responses";
 import { ensurePostAccess } from "@/server/posts/utils";
+import { prisma } from "@/server/db";
+import { queueNotificationsForEvent } from "@/server/notifications";
 
 type RouteContext = { params: { id?: string | string[] } };
 
@@ -65,6 +66,8 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
       select: { postId: true },
     });
 
+    let createdLike = false;
+
     if (parsed.data.like) {
       if (!existing) {
         await tx.postLike.create({
@@ -77,6 +80,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
           where: { id: postId },
           data: { likesCount: { increment: 1 } },
         });
+        createdLike = true;
       }
     } else if (existing) {
       await tx.postLike.delete({
@@ -93,15 +97,25 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
       });
     }
 
-    return tx.post.findUnique({
+    const post = await tx.post.findUnique({
       where: { id: postId },
       select: { likesCount: true },
     });
+
+    return { post, createdLike };
   });
 
-  if (!result) {
+  if (!result?.post) {
     return jsonError({ code: "not_found", message: "Gonderi bulunamadi." }, 404);
   }
 
-  return jsonSuccess({ likesCount: result.likesCount });
+  if (result.createdLike) {
+    await queueNotificationsForEvent({
+      kind: "post_like",
+      actorId: userId,
+      postId,
+    });
+  }
+
+  return jsonSuccess({ likesCount: result.post.likesCount });
 }

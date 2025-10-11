@@ -23,8 +23,8 @@ vi.mock("@/server/auth/session", () => ({
 
 import { GET } from "@/app/api/posts/route";
 
-function buildRequest(url: string) {
-  return new NextRequest(url);
+function buildRequest(url: string, init?: ConstructorParameters<typeof NextRequest>[1]) {
+  return new NextRequest(url, init);
 }
 
 const baseDate = new Date("2025-10-10T12:00:00.000Z");
@@ -112,5 +112,29 @@ describe("GET /api/posts", () => {
     const body = await response.json();
     expect(body.error.code).toBe("invalid_cursor");
     expect(postFindMany).not.toHaveBeenCalled();
+  });
+
+  it("If-None-Match eslesirse 304 dondurur", async () => {
+    authenticateMock.mockReturnValue(null);
+
+    const posts = Array.from({ length: 2 }, (_, index) => createPost(`post-${index}`));
+    postFindMany.mockResolvedValueOnce(posts);
+
+    const firstResponse = await GET(buildRequest("https://app.local/api/posts?scope=public"));
+    expect(firstResponse.status).toBe(200);
+    const etag = firstResponse.headers.get("etag");
+    expect(etag).toBeTruthy();
+
+    postFindMany.mockResolvedValueOnce(posts);
+    const secondResponse = await GET(
+      buildRequest("https://app.local/api/posts?scope=public", {
+        headers: {
+          "if-none-match": etag!,
+        },
+      }),
+    );
+
+    expect(secondResponse.status).toBe(304);
+    expect(secondResponse.headers.get("etag")).toBe(etag);
   });
 });

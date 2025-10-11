@@ -27,7 +27,10 @@ export async function GET(request: NextRequest) {
     return jsonError({ code: "unauthorized", message: "Kullanıcı bulunamadı" }, 401);
   }
 
-  return jsonSuccess({
-    user: serializeUser(user, { includeSensitive: true }),
-  });
+  return jsonSuccess(
+    {
+      user: serializeUser(user, { includeSensitive: true }),
+    },
+    { request },
+  );
 }

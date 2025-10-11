@@ -1,9 +1,10 @@
 import { NextRequest } from "next/server";
 import { FollowStatus } from "@prisma/client";
-import { prisma } from "@/server/db";
 import { authenticate } from "@/server/auth/session";
 import { jsonError, jsonSuccess } from "@/server/api/responses";
 import { findUserByIdentifier } from "@/server/users/utils";
+import { prisma } from "@/server/db";
+import { queueNotificationsForEvent } from "@/server/notifications";
 
 type RouteContext = { params: { id?: string | string[] } };
 
@@ -41,27 +42,49 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
     return jsonError({ code: "validation_error", message: "Kendinizi takip edemezsiniz." }, 400);
   }
 
-  const follow = await prisma.follow.upsert({
-    where: {
-      followerId_followeeId: {
+  const result = await prisma.$transaction(async (tx) => {
+    const existing = await tx.follow.findUnique({
+      where: {
+        followerId_followeeId: {
+          followerId: session.sub,
+          followeeId: targetUserId,
+        },
+      },
+      select: { status: true },
+    });
+
+    const follow = await tx.follow.upsert({
+      where: {
+        followerId_followeeId: {
+          followerId: session.sub,
+          followeeId: targetUserId,
+        },
+      },
+      update: {
+        status: FollowStatus.ACCEPTED,
+        isCloseFriend: false,
+      },
+      create: {
         followerId: session.sub,
         followeeId: targetUserId,
+        status: FollowStatus.ACCEPTED,
       },
-    },
-    update: {
-      status: FollowStatus.ACCEPTED,
-      isCloseFriend: false,
-    },
-    create: {
-      followerId: session.sub,
-      followeeId: targetUserId,
-      status: FollowStatus.ACCEPTED,
-    },
-    select: { status: true },
+      select: { status: true },
+    });
+
+    return { follow, previousStatus: existing?.status ?? null };
   });
 
+  if (result.previousStatus !== FollowStatus.ACCEPTED && result.follow.status === FollowStatus.ACCEPTED) {
+    await queueNotificationsForEvent({
+      kind: "follow",
+      actorId: session.sub,
+      targetUserId,
+    });
+  }
+
   return jsonSuccess({
-    status: follow.status.toLowerCase(),
+    status: result.follow.status.toLowerCase(),
   });
 }
 

@@ -74,11 +74,14 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     return jsonError({ code: "not_found", message: "Gonderi bulunamadi." }, 404);
   }
 
-  return jsonSuccess({
-    post: serializePost(post, {
-      likedByViewer: viewerId ? Array.isArray((post as any).likes) && (post as any).likes.length > 0 : false,
-    }),
-  });
+  return jsonSuccess(
+    {
+      post: serializePost(post, {
+        likedByViewer: viewerId ? Array.isArray((post as any).likes) && (post as any).likes.length > 0 : false,
+      }),
+    },
+    { request },
+  );
 }
 
 export async function PATCH(request: NextRequest, { params }: RouteContext) {

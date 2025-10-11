@@ -12,6 +12,11 @@ import {
   mapMealType,
   buildMeasurementData,
 } from "@/server/posts/utils";
+import {
+  buildRateLimitHeaders,
+  consumeRateLimit,
+  getPostsPerMinuteLimit,
+} from "@/server/rate-limit";
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 50;
@@ -157,10 +162,13 @@ export async function GET(request: NextRequest) {
     }),
   );
 
-  return jsonSuccess({
-    posts: serialized,
-    nextCursor,
-  });
+  return jsonSuccess(
+    {
+      posts: serialized,
+      nextCursor,
+    },
+    { request },
+  );
 }
 
 export async function POST(request: NextRequest) {
@@ -183,6 +191,31 @@ export async function POST(request: NextRequest) {
 
   if (!viewer) {
     return jsonError({ code: "unauthorized", message: "Kullanici kaydi bulunamadi." }, 401);
+  }
+
+  const rateLimitResult = await consumeRateLimit({
+    identifier: `posts:create:${viewer.id}`,
+    limit: getPostsPerMinuteLimit(),
+    windowMs: 60_000,
+  });
+  const rateLimitHeaders = buildRateLimitHeaders(rateLimitResult);
+
+  if (rateLimitResult && !rateLimitResult.ok) {
+    return jsonError(
+      {
+        code: "rate_limited",
+        message: `Dakikada en fazla ${rateLimitResult.limit} gonderi olusturabilirsiniz.`,
+        details: {
+          limit: rateLimitResult.limit,
+          remaining: rateLimitResult.remaining,
+          resetAt: rateLimitResult.resetAt,
+        },
+      },
+      {
+        status: 429,
+        headers: rateLimitHeaders,
+      },
+    );
   }
 
   const payload = await request.json().catch(() => null);
@@ -248,6 +281,9 @@ export async function POST(request: NextRequest) {
     {
       post: serializePost(post, { likedByViewer: false }),
     },
-    201,
+    {
+      status: 201,
+      headers: rateLimitHeaders,
+    },
   );
 }

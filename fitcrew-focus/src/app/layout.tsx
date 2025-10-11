@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
 import { Inter, Montserrat } from "next/font/google";
 import "./globals.css";
@@ -37,7 +38,7 @@ export const viewport: Viewport = {
 };
 
 type RootLayoutProps = {
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 export default function RootLayout({ children }: RootLayoutProps) {
@@ -45,14 +46,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="tr" suppressHydrationWarning>
       <body
         className={cn(
-          "min-h-screen bg-background text-foreground",
+          "min-h-dvh bg-background text-foreground",
           "font-sans antialiased",
-          "pt-safe pb-safe",
+          "px-safe",
           inter.variable,
           montserrat.variable,
         )}
       >
-        {children}
+        <div className="mx-auto min-h-dvh w-full max-w-mobile">
+          {children}
+        </div>
       </body>
     </html>
   );

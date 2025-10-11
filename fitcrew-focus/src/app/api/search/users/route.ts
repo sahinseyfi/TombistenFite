@@ -68,7 +68,10 @@ export async function GET(request: NextRequest) {
     },
   });
 
-  return jsonSuccess({
-    users: users.map((user) => serializeUser(user)),
-  });
+  return jsonSuccess(
+    {
+      users: users.map((user) => serializeUser(user)),
+    },
+    { request },
+  );
 }

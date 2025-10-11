@@ -103,8 +103,11 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     }
   }
 
-  return jsonSuccess({
-    users: following.map((entry) => serializeUser(entry.followee)),
-    nextCursor,
-  });
+  return jsonSuccess(
+    {
+      users: following.map((entry) => serializeUser(entry.followee)),
+      nextCursor,
+    },
+    { request },
+  );
 }

@@ -1,45 +1,65 @@
-import { Home, Search, CircleDashed, TrendingUp, User } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+\"use client\";
 
-const tabs = [
-  { name: 'Akış', icon: Home, path: '/feed' },
-  { name: 'Keşfet', icon: Search, path: '/explore' },
-  { name: 'Çark', icon: CircleDashed, path: '/treats', isAction: true },
-  { name: 'Grafikler', icon: TrendingUp, path: '/analytics' },
-  { name: 'Profil', icon: User, path: '/profile' }
+import Link from \"next/link\";
+import { usePathname } from \"next/navigation\";
+import { Bell, CircleDashed, Home, TrendingUp, User } from \"lucide-react\";
+import { cn } from \"@/lib/utils\";
+
+type TabConfig = {
+  name: string;
+  href: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  isAction?: boolean;
+  withBadge?: boolean;
+};
+
+const tabs: TabConfig[] = [
+  { name: \"Akış\", icon: Home, href: \"/feed\" },
+  { name: \"Ölçümler\", icon: TrendingUp, href: \"/measurements\" },
+  { name: \"Çark\", icon: CircleDashed, href: \"/treats\", isAction: true },
+  { name: \"Bildirimler\", icon: Bell, href: \"/notifications\", withBadge: true },
+  { name: \"Profil\", icon: User, href: \"/profile\" },
 ];
 
-export default function BottomTabBar() {
-  const location = useLocation();
+type BottomTabBarProps = {
+  unreadCount?: number;
+};
+
+export default function BottomTabBar({ unreadCount = 0 }: BottomTabBarProps) {
+  const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border">
-      <div className="max-w-mobile mx-auto px-2 pb-safe">
-        <div className="flex items-center justify-around h-16">
-          {tabs.map((tab) => {
-            const isActive = location.pathname === tab.path;
-            const Icon = tab.icon;
+    <nav className=\"fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-xl pb-safe\">
+      <div className=\"mx-auto flex h-16 max-w-mobile items-center justify-around px-2\">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = pathname === tab.href;
+          const showBadge = tab.withBadge && unreadCount > 0;
 
-            return (
-              <Link
-                key={tab.path}
-                to={tab.path}
-                className={cn(
-                  'flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all min-w-[60px]',
-                  tab.isAction
-                    ? 'gradient-primary text-primary-foreground shadow-glow scale-110'
-                    : isActive
-                    ? 'text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                <Icon className={cn('w-6 h-6', tab.isAction && 'w-7 h-7')} />
-                <span className="text-[10px] font-medium">{tab.name}</span>
-              </Link>
-            );
-          })}
-        </div>
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              className={cn(
+                \"relative flex min-w-[60px] flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-medium transition-all\",
+                tab.isAction
+                  ? \"gradient-primary text-primary-foreground shadow-glow scale-105\"
+                  : isActive
+                    ? \"text-primary\"
+                    : \"text-muted-foreground hover:text-foreground\",
+              )}
+            >
+              <Icon className={cn(\"h-6 w-6\", tab.isAction && \"h-7 w-7\")} aria-hidden />
+              <span className=\"text-[10px] font-semibold tracking-wide\">{tab.name}</span>
+
+              {showBadge && (
+                <span className=\"absolute -top-1 right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground\">
+                  {unreadCount > 9 ? \"9+\" : unreadCount}
+                </span>
+              )}
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );

@@ -1,10 +1,16 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/server/db";
 import { authenticate } from "@/server/auth/session";
 import { jsonError, jsonSuccess } from "@/server/api/responses";
 import { ensurePostAccess, authorSelect } from "@/server/posts/utils";
 import { serializeComment } from "@/server/serializers/comment";
+import {
+  buildRateLimitHeaders,
+  consumeRateLimit,
+  getCommentsPerMinuteLimit,
+} from "@/server/rate-limit";
+import { prisma } from "@/server/db";
+import { queueNotificationsForEvent } from "@/server/notifications";
 
 type RouteContext = { params: { id?: string | string[] } };
 
@@ -83,10 +89,13 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     }
   }
 
-  return jsonSuccess({
-    comments: comments.map((comment) => serializeComment(comment)),
-    nextCursor,
-  });
+  return jsonSuccess(
+    {
+      comments: comments.map((comment) => serializeComment(comment)),
+      nextCursor,
+    },
+    { request },
+  );
 }
 
 export async function POST(request: NextRequest, { params }: RouteContext) {
@@ -122,6 +131,31 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
     return jsonError({ code: access.code, message: access.message }, access.status);
   }
 
+  const rateLimitResult = await consumeRateLimit({
+    identifier: `comments:create:${session.sub}`,
+    limit: getCommentsPerMinuteLimit(),
+    windowMs: 60_000,
+  });
+  const rateLimitHeaders = buildRateLimitHeaders(rateLimitResult);
+
+  if (rateLimitResult && !rateLimitResult.ok) {
+    return jsonError(
+      {
+        code: "rate_limited",
+        message: `Dakikada en fazla ${rateLimitResult.limit} yorum yapabilirsiniz.`,
+        details: {
+          limit: rateLimitResult.limit,
+          remaining: rateLimitResult.remaining,
+          resetAt: rateLimitResult.resetAt,
+        },
+      },
+      {
+        status: 429,
+        headers: rateLimitHeaders,
+      },
+    );
+  }
+
   const comment = await prisma.$transaction(async (tx) => {
     const created = await tx.comment.create({
       data: {
@@ -144,10 +178,21 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
     return created;
   });
 
+  await queueNotificationsForEvent({
+    kind: "post_comment",
+    actorId: session.sub,
+    postId,
+    commentId: comment.id,
+    commentBody: comment.body,
+  });
+
   return jsonSuccess(
     {
       comment: serializeComment(comment),
     },
-    201,
+    {
+      status: 201,
+      headers: rateLimitHeaders,
+    },
   );
 }

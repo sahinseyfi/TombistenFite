@@ -125,10 +125,13 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return jsonSuccess({
-    measurements: measurements.map(serializeMeasurement),
-    nextCursor,
-  });
+  return jsonSuccess(
+    {
+      measurements: measurements.map(serializeMeasurement),
+      nextCursor,
+    },
+    { request },
+  );
 }
 
 export async function POST(request: NextRequest) {

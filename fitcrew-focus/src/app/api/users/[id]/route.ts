@@ -10,7 +10,7 @@ type RouteContext = {
   };
 };
 
-export async function GET(_request: NextRequest, context: RouteContext) {
+export async function GET(request: NextRequest, context: RouteContext) {
   const { id } = context.params;
 
   const user = await prisma.user.findFirst({
@@ -29,10 +29,13 @@ export async function GET(_request: NextRequest, context: RouteContext) {
   });
 
   if (!user) {
-    return jsonError({ code: "not_found", message: "Kullanıcı bulunamadı" }, 404);
+    return jsonError({ code: "not_found", message: "Kullanici bulunamadi." }, 404);
   }
 
-  return jsonSuccess({
-    user: serializeUser(user),
-  });
+  return jsonSuccess(
+    {
+      user: serializeUser(user),
+    },
+    { request },
+  );
 }

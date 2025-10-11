@@ -45,6 +45,7 @@ enum NotificationType {
   COMMENT
   FOLLOW
   AI_COMMENT_READY
+  TREAT_BONUS
 }
 
 model User {

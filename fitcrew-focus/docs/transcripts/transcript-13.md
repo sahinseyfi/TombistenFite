@@ -1,0 +1,5 @@
+- AI yorum kuyruğu tamamlandı: `src/server/ai/client.ts:1`, `src/server/ai/prompts.ts:1` ve `src/server/ai/comments.ts:1` OpenAI istemcisi, prompt üretimi ve `processNextAiComment` işleyicisini sağlıyor; eksik yapılandırma ve hatalı yanıt senaryoları `FAILED` durumuna düşüyor.
+- Otomasyon uçları eklendi: Cron tetikleyicisi `src/app/api/ai-comments/run/route.ts:1` ile `AI_COMMENT_CRON_SECRET` doğrulaması yapılıyor; gönderi sahibi yeniden deneme akışı `src/app/api/posts/[id]/ai-comment/retry/route.ts:1` üzerinden sağlandı.
+- Çevresel değişkenler güncellendi: `src/env.ts:1` ve `.env.example:1` OpenAI cron gizli anahtarını doğruluyor.
+- Testler: `tests/server/ai/comments.test.ts:1`, `tests/app/api/ai-comments/run/route.test.ts:1` ve `tests/app/api/posts/[id]/ai-comment/retry/route.test.ts:1` ile tüm AI yorum akışı regresyon altına alındı; paket genelinde `pnpm test` yeşil.
+- Dokümanlar: `docs/ROADMAP.md:1` ve `docs/PLAN_STATUS.md:1` S10'un tamamlandığını ve sonraki odakların (S11-S13) güncellendiğini yansıtıyor.

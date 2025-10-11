@@ -4,6 +4,11 @@
 
 @layer base {
   :root {
+    --safe-top: env(safe-area-inset-top);
+    --safe-right: env(safe-area-inset-right);
+    --safe-bottom: env(safe-area-inset-bottom);
+    --safe-left: env(safe-area-inset-left);
+
     --background: 0 0% 98%;
     --foreground: 222 47% 11%;
 
@@ -133,10 +138,15 @@
   }
 
   .pt-safe {
-    padding-top: max(env(safe-area-inset-top), 1rem);
+    padding-top: max(var(--safe-top), 0px);
   }
 
   .pb-safe {
-    padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+    padding-bottom: max(var(--safe-bottom), 0px);
+  }
+
+  .px-safe {
+    padding-left: max(var(--safe-left), 0px);
+    padding-right: max(var(--safe-right), 0px);
   }
 }

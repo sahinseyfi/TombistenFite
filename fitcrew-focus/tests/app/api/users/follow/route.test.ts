@@ -1,11 +1,22 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import { NextRequest } from "next/server";
 
-const { authenticateMock, upsertMock, deleteManyMock, findUserMock } = vi.hoisted(() => ({
+const {
+  authenticateMock,
+  transactionMock,
+  findUniqueMock,
+  upsertMock,
+  deleteManyMock,
+  findUserMock,
+  queueNotificationsMock,
+} = vi.hoisted(() => ({
   authenticateMock: vi.fn(),
+  transactionMock: vi.fn(),
+  findUniqueMock: vi.fn(),
   upsertMock: vi.fn(),
   deleteManyMock: vi.fn(),
   findUserMock: vi.fn(),
+  queueNotificationsMock: vi.fn(),
 }));
 
 vi.mock("@/server/auth/session", () => ({
@@ -14,8 +25,8 @@ vi.mock("@/server/auth/session", () => ({
 
 vi.mock("@/server/db", () => ({
   prisma: {
+    $transaction: transactionMock,
     follow: {
-      upsert: upsertMock,
       deleteMany: deleteManyMock,
     },
   },
@@ -23,6 +34,10 @@ vi.mock("@/server/db", () => ({
 
 vi.mock("@/server/users/utils", () => ({
   findUserByIdentifier: findUserMock,
+}));
+
+vi.mock("@/server/notifications", () => ({
+  queueNotificationsForEvent: queueNotificationsMock,
 }));
 
 import { POST, DELETE } from "@/app/api/users/[id]/follow/route";
@@ -36,9 +51,22 @@ function buildRequest(url: string, init?: NextRequestCtorInit) {
 describe("POST /api/users/[id]/follow", () => {
   beforeEach(() => {
     authenticateMock.mockReset();
+    transactionMock.mockReset();
+    findUniqueMock.mockReset();
     upsertMock.mockReset();
     deleteManyMock.mockReset();
     findUserMock.mockReset();
+    queueNotificationsMock.mockReset();
+
+    transactionMock.mockImplementation(async (callback) =>
+      callback({
+        follow: {
+          findUnique: findUniqueMock,
+          upsert: upsertMock,
+        },
+      } as any),
+    );
+    findUniqueMock.mockResolvedValue(null);
   });
 
   it("oturum olmadan 401 dondurur", async () => {
@@ -110,6 +138,11 @@ describe("POST /api/users/[id]/follow", () => {
         status: "ACCEPTED",
       },
       select: { status: true },
+    });
+    expect(queueNotificationsMock).toHaveBeenCalledWith({
+      kind: "follow",
+      actorId: "viewer-2",
+      targetUserId: "target-1",
     });
   });
 });

@@ -1,6 +1,6 @@
-import { ReactNode } from 'react';
-import BottomTabBar from './BottomTabBar';
-import Header from './Header';
+import type { ReactNode } from \"react\";
+import BottomTabBar from \"./BottomTabBar\";
+import Header from \"./Header\";
 
 interface MobileLayoutProps {
   children: ReactNode;
@@ -8,29 +8,33 @@ interface MobileLayoutProps {
   headerAction?: ReactNode;
   showNotifications?: boolean;
   notificationCount?: number;
+  hideBottomNav?: boolean;
 }
 
-export default function MobileLayout({ 
-  children, 
-  title, 
+export default function MobileLayout({
+  children,
+  title,
   headerAction,
-  showNotifications,
-  notificationCount 
+  showNotifications = true,
+  notificationCount = 0,
+  hideBottomNav = false,
 }: MobileLayoutProps) {
   return (
-    <div className="min-h-screen bg-background max-w-mobile mx-auto relative">
-      <Header 
-        title={title} 
-        action={headerAction} 
+    <div className=\"relative mx-auto flex min-h-dvh w-full max-w-mobile flex-col bg-background\">
+      <Header
+        title={title}
+        action={headerAction}
         showNotifications={showNotifications}
         notificationCount={notificationCount}
       />
-      
-      <main className="pb-20 min-h-[calc(100vh-3.5rem)]">
-        {children}
+
+      <main className=\"flex-1 px-4 pb-[5.5rem] pt-4 sm:px-6\">
+        <div className=\"mx-auto max-w-mobile space-y-4 pb-safe\">
+          {children}
+        </div>
       </main>
-      
-      <BottomTabBar />
+
+      {!hideBottomNav && <BottomTabBar unreadCount={notificationCount} />}
     </div>
   );
 }
