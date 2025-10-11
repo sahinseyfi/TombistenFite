@@ -14,7 +14,8 @@
     "prisma:studio": "prisma studio",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "smoke:api": "tsx scripts/smoke/smoke-api.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.676.0",

@@ -20,7 +20,7 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   title: "FitCrew Focus",
-  description: "FitCrew topluluğu için mobil odaklı beslenme ve ilerleme takibi deneyimi.",
+  description: "FitCrew toplulu\u011Fu i\u00E7in mobil odakl\u0131 beslenme ve ilerleme takibi deneyimi.",
   metadataBase: new URL("https://fitcrew-focus.example.com"),
   icons: {
     icon: "/icons/icon-192x192.png",

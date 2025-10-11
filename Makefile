@@ -29,6 +29,9 @@ format:
 test:
 	cd $(APP_DIR) && $(PNPM) test
 
+smoke:
+	cd $(APP_DIR) && $(PNPM) smoke:api
+
 env:vercel:push:
 	@./scripts/env/push_vercel_env.sh $(APP_DIR)/.env.local
 

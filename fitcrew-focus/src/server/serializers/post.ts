@@ -118,3 +118,5 @@ export function serializePost(post: PostWithRelations, options: SerializePostOpt
     likedByViewer: options.likedByViewer ?? false,
   };
 }
+
+export type SerializedPost = ReturnType<typeof serializePost>;

@@ -35,3 +35,6 @@ export function serializeTreatSpin(spin: TreatSpin) {
     createdAt: spin.createdAt.toISOString(),
   };
 }
+
+export type SerializedTreatItem = ReturnType<typeof serializeTreatItem>;
+export type SerializedTreatSpin = ReturnType<typeof serializeTreatSpin>;

@@ -40,18 +40,18 @@ Bu dokuman, tek oturumluk calisma planindaki adimlarin mevcut durumunu ozetler v
 - **S12 - Notifications**  
   `GET /api/notifications`, `PATCH /api/notifications/{id}/ack` ve `POST /api/notifications/ack-all` uclari yayina alindi. `queueNotificationsForEvent` servisi post begenileri, yorumlar, takipler, AI yorum hazirlanmasi ve Treat Wheel bonuslari icin bildirim fan-out sagliyor; okunmamis sayac Redis cache + invalidation ile guncelleniyor. Yeni rotalar ve servis davranislari `tests/app/api/notifications/**/*.test.ts` ve `tests/server/notifications/index.test.ts` ile kapsama alindi.
 
-## Devam Eden Adimlar
-
-- **S13 - UI Wiring**  
-  DaisyUI + Tailwind bilesenleriyle mobil oncelikli ekranlar (feed, olcum zaman cizelgesi, profil, Treat Wheel) baglanacak. `layout.tsx` uzerinden `BottomNav` ve bildirim rozet context'i saglanacak; safe area (`pt-safe`/`pb-safe`) yardimcilari ve Playwright/Vitest smoke testleri kritik akislari koruyacak.
+- **S13 - UI Wiring (Mobil Katman)**  
+  MobileLayout, safe-area yardimci siniflari ve NotificationProvider baglanti katmani tamamlandi; feed, measurements, treats, notifications ve profile sayfalari DaisyUI/Tailwind ile mobil oncelikli hale getirildi. Bildirim rozetleri paylasilan context ile guncelleniyor ve tests/lib/app-data.test.ts ile tests/components/notification-context.test.tsx regresyon sagliyor.
 
 - **S14 - ENV & Docs & Smoke Tests**  
-  `.env.example` zorunlu/opsiyonel anahtar aciklamalariyla guncellenecek, README/TROUBLESHOOTING genisletilecek ve `scripts/smoke/` altinda `pnpm smoke:api` komutu CI'ya dahil edilecek; tamamlandiginda ROADMAP ve PLAN_STATUS yeniden senkronize edilecek.
+  .env.example zorunlu/opsiyonel anahtar aciklamalari ve ornek degerlerle guncellendi, README ile docs/TROUBLESHOOTING.md yeniden yazilarak make/pnpm akislari dokumante edildi. scripts/smoke/smoke-api.ts betigi ve pnpm smoke:api komutu olusturuldu; Makefile ile GitHub Actions pipeline'i smoke adimini calistiracak sekilde revize edildi.
 
-## Orta Vadeli Basliklar
+## Devam Eden Adimlar
 
 - **S15 - Progress Insights & Coach Panel**  
-  `/api/insights/progress` ile haftalik/aylik trend serileri, `CoachNote` modeli ve post/olcum baglanti tablolari planlandi; AI comment kuyrugu ile entegrasyon ve hafif mobil grafik bilesen secimi degerlendirilecek.
+  Analitik API'larinin (ozellikle `/api/insights/progress`) tasarimi ve CoachNote veri modelinin olusturulmasi icin analiz yapiliyor. Mobil coach paneli icin grafik kitapligi secimi ve DaisyUI uyumlu kart taslaklari hazirlaniyor.
+
+## Orta Vadeli Basliklar
 
 - **S16 - Challenges & Routine Gamification**  
   Prisma modelleri ve `/api/challenges` uclariyla meydan okuma/rutin takibi saglanacak; Treat Wheel ve bildirim sistemiyle baglantili rozet/kredi odulleri tasarlanacak. Mobilde `Tasks` ve `Streak` kartlari `BottomNav` altinda konumlanacak.
@@ -67,6 +67,6 @@ Bu dokuman, tek oturumluk calisma planindaki adimlarin mevcut durumunu ozetler v
 
 ## Onerilen Hemen Sonraki Is
 
-1. S13 icin DaisyUI bilesen prototiplerini ve safe-area yardimcilarinin uygulamasini degerlendir.
-2. S13 bildirim rozet deneyimi icin `BottomNav` taslagi ve badge veri akisini planla.
-3. `.env.example` ve `pnpm smoke:api` calisma planlarini (S14) detaylandir, belgelere taslak notlar ekle.
+1. S15 kapsaminda `/api/insights/progress` icin Prisma model taslagini hazirla ve olcum/treat baglantilarini krokilendir.
+2. CoachNote icin API tasarimini (CRUD + bildirim entegrasyonu) netlestir ve gerekecek migrasyon adimlarini planla.
+3. Mobil coach paneli icin chart kitapligi seceneklerini (victory-native vs. recharts) karsilastir, UX Mobile Guide ile uyumlu mock hazirla.

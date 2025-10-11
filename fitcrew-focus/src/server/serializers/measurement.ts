@@ -22,3 +22,5 @@ export function serializeMeasurement(measurement: Measurement) {
     createdAt: measurement.createdAt.toISOString(),
   };
 }
+
+export type SerializedMeasurement = ReturnType<typeof serializeMeasurement>;

@@ -14,28 +14,74 @@ env:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fitcrew_focus
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fitcrew_focus
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/fitcrew_focus
+      APP_URL: http://127.0.0.1:3100
+      JWT_SECRET: ci-dev-secret-key-please-change-1234567890
+      AI_COMMENT_CRON_SECRET: ci-cron-secret-token
     steps:
-      - name: Kaynak kodu al
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Node.js kur
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: webapp/package-lock.json
+          cache: pnpm
+          cache-dependency-path: fitcrew-focus/pnpm-lock.yaml
 
-      - name: Bağımlılıkları kur
-        run: npm ci --prefix webapp
+      - name: Install dependencies
+        working-directory: fitcrew-focus
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        working-directory: fitcrew-focus
+        run: pnpm prisma:generate
+
+      - name: Apply migrations
+        working-directory: fitcrew-focus
+        run: pnpm prisma migrate deploy
+
+      - name: Seed database
+        working-directory: fitcrew-focus
+        run: pnpm prisma:seed
 
       - name: Lint
-        run: npm run lint --prefix webapp
+        working-directory: fitcrew-focus
+        run: pnpm lint
 
-      - name: Test
-        run: npm run test --prefix webapp
+      - name: Unit tests
+        working-directory: fitcrew-focus
+        run: pnpm test
 
       - name: Build
-        run: npm run build --prefix webapp
+        working-directory: fitcrew-focus
+        run: pnpm build
+
+      - name: Smoke API
+        working-directory: fitcrew-focus
+        run: pnpm smoke:api
 
   vercel-preview:
     name: Vercel Preview Deploy
@@ -47,28 +93,35 @@ jobs:
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
     steps:
-      - name: Kaynak kodu al
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Node.js kur
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: fitcrew-focus/pnpm-lock.yaml
 
-      - name: Bağımlılıkları kur
-        working-directory: webapp
-        run: npm ci
+      - name: Install dependencies
+        working-directory: fitcrew-focus
+        run: pnpm install --frozen-lockfile
 
-      - name: Ortam yapılandırmasını çek
-        working-directory: webapp
+      - name: Pull Vercel environment
+        working-directory: fitcrew-focus
         env:
           VERCEL_ENV: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
-        run: npx vercel pull --yes --environment=$VERCEL_ENV --token=$VERCEL_TOKEN
+        run: pnpm dlx vercel pull --yes --environment=$VERCEL_ENV --token=$VERCEL_TOKEN
 
-      - name: Ön yapıyı oluştur
-        working-directory: webapp
-        run: npx vercel build --token=$VERCEL_TOKEN
+      - name: Build preview
+        working-directory: fitcrew-focus
+        run: pnpm dlx vercel build --token=$VERCEL_TOKEN
 
-      - name: Önizlemeyi yayımla
-        working-directory: webapp
-        run: npx vercel deploy --prebuilt --token=$VERCEL_TOKEN
+      - name: Deploy preview
+        working-directory: fitcrew-focus
+        run: pnpm dlx vercel deploy --prebuilt --token=$VERCEL_TOKEN
