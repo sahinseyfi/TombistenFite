@@ -1,5 +1,6 @@
 import { apiFetch, ApiError } from "@/lib/api-client";
 import {
+  FALLBACK_CHALLENGES,
   FALLBACK_MEASUREMENTS,
   FALLBACK_NOTIFICATIONS,
   FALLBACK_POSTS,
@@ -7,12 +8,18 @@ import {
   FALLBACK_TREAT_ITEMS,
   FALLBACK_TREAT_SPINS,
   FALLBACK_UNREAD_COUNT,
+  FALLBACK_PROGRESS_INSIGHTS,
+  FALLBACK_REFERRALS,
 } from "@/lib/fallback-data";
 import type { SerializedPost } from "@/server/serializers/post";
 import type { SerializedMeasurement } from "@/server/serializers/measurement";
 import type { SerializedTreatItem, SerializedTreatSpin } from "@/server/serializers/treat";
 import type { SerializedNotification } from "@/server/serializers/notification";
 import type { EligibilityResult } from "@/server/treats/eligibility";
+import type { ProgressInsights } from "@/server/insights/progress";
+import type { SerializedCoachNote } from "@/server/serializers/coach-note";
+import type { SerializedChallenge } from "@/server/serializers/challenge";
+import type { SerializedReferralInvite } from "@/server/serializers/referral";
 
 type ApiListResponse<T> = {
   nextCursor: string | null | undefined;
@@ -155,6 +162,93 @@ export async function fetchTreats(limit = 20): Promise<TreatsData> {
       spins: FALLBACK_TREAT_SPINS,
       eligibility: FALLBACK_TREAT_ELIGIBILITY,
       nextCursor: null,
+      source: "fallback",
+    };
+  }
+}
+
+export type ReferralData = {
+  referral: {
+    code: string;
+    shareUrl: string;
+  };
+  invites: SerializedReferralInvite[];
+  summary: {
+    total: number;
+    accepted: number;
+    pending: number;
+  };
+  source: "api" | "fallback";
+};
+
+export async function fetchReferrals(): Promise<ReferralData> {
+  try {
+    const response = await apiFetch<{
+      referral: { code: string; shareUrl: string };
+      invites: SerializedReferralInvite[];
+      summary: { total: number; accepted: number; pending: number };
+    }>("/api/referrals", { auth: true });
+
+    return {
+      referral: response.referral,
+      invites: response.invites,
+      summary: response.summary,
+      source: "api",
+    };
+  } catch (error) {
+    return {
+      ...FALLBACK_REFERRALS,
+      source: "fallback",
+    };
+  }
+}
+
+export type ProgressSummary = ProgressInsights["summary"];
+export type ProgressSeriesPoint =
+  | ProgressInsights["weeklySeries"][number]
+  | ProgressInsights["monthlySeries"][number];
+
+export type ProgressInsightsData = {
+  summary: ProgressSummary;
+  weeklySeries: ProgressInsights["weeklySeries"];
+  monthlySeries: ProgressInsights["monthlySeries"];
+  recentNotes: SerializedCoachNote[];
+  source: "api" | "fallback";
+};
+
+export async function fetchProgressInsights(): Promise<ProgressInsightsData> {
+  try {
+    const response = await apiFetch<ProgressInsights>("/api/insights/progress", { auth: true });
+    return {
+      summary: response.summary,
+      weeklySeries: response.weeklySeries,
+      monthlySeries: response.monthlySeries,
+      recentNotes: response.recentNotes,
+      source: "api",
+    };
+  } catch (error) {
+    return {
+      ...FALLBACK_PROGRESS_INSIGHTS,
+      source: "fallback",
+    };
+  }
+}
+
+export type ChallengesData = {
+  challenges: SerializedChallenge[];
+  source: "api" | "fallback";
+};
+
+export async function fetchChallenges(): Promise<ChallengesData> {
+  try {
+    const response = await apiFetch<{ challenges: SerializedChallenge[] }>("/api/challenges", { auth: true });
+    return {
+      challenges: response.challenges,
+      source: "api",
+    };
+  } catch (error) {
+    return {
+      challenges: FALLBACK_CHALLENGES,
       source: "fallback",
     };
   }

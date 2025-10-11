@@ -18,13 +18,16 @@ Bu yol haritasi 11.10.2025 itibariyla backend calismalarinin durumunu ozetler.
 - **S12 - Notifications:** Bildirim API'lari (GET /api/notifications, PATCH /api/notifications/{id}/ack, POST /api/notifications/ack-all) yayina alindi. Post begenisi, yorum, takip, AI yorum hazirlama ve Treat Wheel bonuslari icin queueNotificationsForEvent fan-out servisi eklendi; okunmamis sayac Redis cache + invalidation ile desteklendi. Vitest kapsaminda yeni rotalar ve servis davranislari icin testler yazildi.
 - **S13 - UI Wiring (Mobil Katman):** Next.js App Router uzerinde MobileLayout, safe-area (pt-safe/pb-safe/px-safe) yardimcilari ve NotificationProvider baglanti katmani olusturuldu. feed, measurements, treats, notifications ve profile sayfalari DaisyUI/Tailwind bilesenleriyle mobil oncelikli sekilde hazirlandi; API erisimleri icin apiFetch yardimcisi ve fallback-data senaryolari eklendi. Bildirim rozeti Header ve BottomTabBar uzerinde paylasilan durum ile guncelleniyor; tests/lib/app-data.test.ts ve tests/components/notification-context.test.tsx ile yeni baglanti katmani regresyon altina alindi.
 - **S14 - ENV & Docs & Smoke Tests:** .env.example dosyasi zorunlu/opsiyonel anahtar aciklamalari ve ornek degerlerle guncellendi; README ve docs/TROUBLESHOOTING.md gelistirilerek make/pnpm akislari, mobil kurulum ve sorun giderme rehberi derlendi. scripts/smoke/smoke-api.ts ile pnpm smoke:api komutu eklendi ve CI surecine dahil edildi; Makefile ve Github Actions pipeline'i yeni smoke adimini calistiracak sekilde revize edildi.
+- **S15 - Progress Insights & Coach Panel:** CoachNote modeli, post/olcum baglantilari ve fallback seed senaryosu eklendi. /api/insights/progress ucu haftalik/aylik trend serilerini, Treat Wheel istatistiklerini ve ko\u00E7 notu \u00F6zetlerini JSON olarak d\u00F6nd\u00FCr\u00FCho; serializeCoachNote ile mobil katmana uygun veri saglandi. Mobilde yeni \u0130lerleme ekran\u0131 Recharts tabanl\u0131 kartlarla kilo/bel grafigi ve Treat Wheel aktivitesini g\u00F6steriyor, ko\u00E7 notlar\u0131 DaisyUI kartlar\u0131nda listeleniyor. tests/server/insights/progress.test.ts ve tests/app/api/insights/progress/route.test.ts ile regresyon kapsam\u0131 genisletildi; BottomTabBar \u0130lerleme sekmesine guncellendi.
+- **S16 - Challenges & Routine Gamification:** Challenge/Task/Participation/Progress modelleri tanimlandi, seed senaryosuna haftalik yuruyus ornegi eklendi. `/api/challenges` GET ucu aktif challenge listesini dondururken, `/api/challenges/{id}/join` ve `/api/challenges/{id}/progress` katilim ve ilerleme kaydini sagliyor. serializeChallenge ile mobil katmanda streak, kalan adim ve odul durumu gosteriliyor; Feed sayfasina ChallengeCard bileseni eklenerek katilim/ilerleme butonlari API'lerle entegre edildi. tests/server/challenges/service.test.ts, tests/app/api/challenges/route.test.ts ve tests/lib/app-data.test.ts yeni akislari dogruluyor.
+- **S17 - Growth & Monetization (Referral v1):** ReferralStatus enumu ve ReferralInvite modeli eklendi; kullanici bazli referralCode olusturma, seed davetleri ve fallback verisi saglandi. `/api/referrals` GET/POST akislari davet kodu, istatistik ve davet listesini sunuyor; fetchReferrals fonksiyonu ile tests/app/api/referrals/route.test.ts ve tests/lib/app-data.test.ts yeni davranisi dogruluyor.
 
 ## Siradaki Oncelikler
 
-- **S15 - Progress Insights & Coach Panel:** Olcum trendleri, gorev ilerlemeleri ve koc geri bildirimlerini birlestirecek analitik paneli hayata gecir.
-  - /api/insights/progress ucu ile haftalik/aylik trend serileri (kilo, olcum, treat kullanimi) saglanacak.
-  - Coach modulu icin CoachNote modeli ve post/olcum baglanti tablolari tanimlanacak; AI comment kuyrugu ile entegrasyon degerlendirilecek.
-  - Mobilde grafik bilesenleri icin victory-native veya hafif bir chart kitapligi test edilerek karar verilecek; safe-area ve DaisyUI temasina uygun kartlar hazirlanacak.
+- **S17 - Growth & Monetization:** Growth denemeleri ve premium paket icin temel altyapi.
+  - Davet API'si sonrasinda transactional e-posta gonderimi icin servis secimi (Resend/Sendgrid vb.) ve bekleme listesi webhook entegrasyonu tasarlanacak.
+  - Stripe veya Paddle benzeri odeme saglayici secilecek; BillingCustomer modeli ve webhook dinleyicileri icin backlog olusacak.
+  - Paywall ekranlari, izinli ozellikler ve premium metric raporlamasi S13/S15 UI katmanlari ile senkron ilerleyecek.
 
 ## Teknik Notlar
 
@@ -34,17 +37,6 @@ Bu yol haritasi 11.10.2025 itibariyla backend calismalarinin durumunu ozetler.
 
 ## Orta Vadeli Basliklar
 
-- **S16 - Challenges & Routine Gamification:** Haftalik meydan okuma ve rutin takip akislariyla motivasyon artirilacak.
-  - Challenge tarifleri, katilim kaydi ve ilerleme takibi icin Prisma modelleri + REST uclari (/api/challenges) olusturulacak.
-  - Treat Wheel ve bildirim sistemi ile entegre rozet/kredi odulleri kurgulanacak.
-  - Mobil UI'da Tasks, Streak ve haftalik ilerleme kartlari BottomNav altina yerlesecek.
-- **S17 - Growth & Monetization:** Growth denemeleri ve premium paket icin temel altyapi.
-  - Arkadas davet/referral akisi (/api/referrals) ve bekleme listesi e-posta entegrasyonu planlanacak.
-  - Stripe veya Paddle benzeri odeme saglayici secilecek; BillingCustomer modeli ve webhook dinleyicileri icin backlog olusacak.
-  - Paywall ekranlari, izinli ozellikler ve premium metric raporlamasi S13 UI katmani ile senkron ilerleyecek.
-
-## Uzun Vadeli Basliklar
-
 - **S18 - Nutrition & Meal Plans:** Beslenme hedefleri ve yemek planlama akislari ile icerik genisletilecek.
   - MealPlan, MealEntry ve makro hedefleri icin Prisma modelleri tanimlanacak; API katmaninda GET/POST /api/meal-plans uclari planlanacak.
   - Kalori/makro hesaplamalari olcum verisi ile baglanarak haftalik raporlar olusturulacak; coach paneli icin beslenme yorumlari backlog'a alinacak.
@@ -53,6 +45,9 @@ Bu yol haritasi 11.10.2025 itibariyla backend calismalarinin durumunu ozetler.
   - Apple HealthKit / Google Fit baglanti servisleri icin OAuth flow'lari ve veri cekme job'lari tanimlanacak.
   - Webhook tuketimi icin syncExternalMeasurement kuyugu ve tekrar deneme stratejileri belirlenecek; cron tetikleyicileri scripts/scheduled/ altinda gruplanacak.
   - Veri importu sonrasi anomaly detection ve kullanici bildirimleri icin Vitest + Playwright senaryolari eklenerek regresyon surece dahil edilecek.
+
+## Uzun Vadeli Basliklar
+
 - **S20 - Observability & Compliance:** Sistem sagligi ve veri guvenligi cercevesi olgunlastirilacak.
   - OpenTelemetry tabanli tracing/logging, Redis/Postgres metrik panelleri ve uyarilar icin Grafana dashboard'lari olusturulacak.
   - Kisisel veri saklama sureleri, silme istekleri ve audit log gereksinimleri icin data-retention dokumani ve yonetim scriptleri hazirlanacak.
@@ -60,7 +55,6 @@ Bu yol haritasi 11.10.2025 itibariyla backend calismalarinin durumunu ozetler.
 
 ## Onerilen Hemen Sonraki Is
 
-1. S15 kapsaminda `/api/insights/progress` icin Prisma model taslagini hazirla ve olcum/treat baglantilarini krokilendir.
-2. CoachNote icin API tasarimini (CRUD + bildirim entegrasyonu) netlestir ve gerekecek migrasyon adimlarini planla.
-3. Mobil coach paneli icin chart kitapligi seceneklerini (victory-native vs. recharts) karsilastir, UX Mobile Guide ile uyumlu mock hazirla.
-
+1. Transactional e-posta saglayici (Resend/Sendgrid vb.) secimini yapip davet gonderim/opt-in webhook gereksinimlerini taslakla; bekleme listesi icin queue/scheduler ihtiyaclarini belirle.
+2. Premium paywall ve izinli ozellikler icin UI/State akislari haritasini cikar, hangi ekranlarda kilitleme yapilacagini ve raporlama hedeflerini netlestir.
+3. Challenges -> Treat Wheel odul entegrasyonu icin bildirim ve bonus hesaplama kurallarini backlog'da ayrintilandir; odul dagitim otomasyon gereksinimlerini topla.

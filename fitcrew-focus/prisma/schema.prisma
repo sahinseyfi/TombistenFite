@@ -48,6 +48,28 @@ enum NotificationType {
   TREAT_BONUS
 }
 
+enum CoachNoteOrigin {
+  MANUAL
+  AI_COMMENT
+}
+
+enum ChallengeFrequency {
+  DAILY
+  WEEKLY
+}
+
+enum ChallengeStatus {
+  ACTIVE
+  COMPLETED
+  DROPPED
+}
+
+enum ReferralStatus {
+  PENDING
+  ACCEPTED
+  CANCELED
+}
+
 model User {
   id                String           @id @default(cuid())
   handle            String           @unique @db.VarChar(32)
@@ -59,6 +81,7 @@ model User {
   bio               String?          @db.VarChar(280)
   defaultVisibility PostVisibility   @default(PUBLIC)
   aiCommentDefault  Boolean          @default(true)
+  referralCode      String?          @unique @db.VarChar(16)
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
 
@@ -72,6 +95,11 @@ model User {
   postLikes    PostLike[]
   postReports  PostReport[]
   notifications Notification[]
+  coachNotesAuthored CoachNote[]    @relation("CoachNotesAuthored")
+  coachNotesReceived CoachNote[]    @relation("CoachNotesReceived")
+  challengeParticipations ChallengeParticipation[]
+  referralsSent      ReferralInvite[] @relation("ReferralsSent")
+  referralsReceived  ReferralInvite[] @relation("ReferralsReceived")
 
   @@map("users")
 }
@@ -101,6 +129,7 @@ model Post {
   comments    Comment[]
   likes       PostLike[]
   reports     PostReport[]
+  coachNotes  CoachNotePostLink[]
 
   @@index([authorId, createdAt], map: "idx_posts_author_created")
   @@index([visibility, createdAt], map: "idx_posts_visibility_created")
@@ -153,6 +182,7 @@ model Measurement {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   post Post? @relation("PostMeasurement")
+  coachNotes CoachNoteMeasurementLink[]
 
   @@index([userId, date], map: "idx_measurements_user_date")
   @@map("measurements")
@@ -235,4 +265,153 @@ model Notification {
 
   @@index([userId, readAt], map: "idx_notifications_user_read")
   @@map("notifications")
+}
+
+model CoachNote {
+  id         String           @id @default(cuid())
+  coachId    String
+  memberId   String
+  origin     CoachNoteOrigin  @default(MANUAL)
+  title      String?          @db.VarChar(120)
+  body       String           @db.VarChar(1000)
+  tags       String[]         @default([])
+  archivedAt DateTime?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  coach    User                      @relation("CoachNotesAuthored", fields: [coachId], references: [id], onDelete: Cascade)
+  member   User                      @relation("CoachNotesReceived", fields: [memberId], references: [id], onDelete: Cascade)
+  posts    CoachNotePostLink[]
+  measurements CoachNoteMeasurementLink[]
+
+  @@index([memberId, createdAt], map: "idx_coach_notes_member_created")
+  @@index([coachId, createdAt], map: "idx_coach_notes_coach_created")
+  @@map("coach_notes")
+}
+
+model CoachNotePostLink {
+  noteId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  note CoachNote @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  post Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([noteId, postId])
+  @@index([postId], map: "idx_coach_note_posts_post")
+  @@map("coach_note_posts")
+}
+
+model CoachNoteMeasurementLink {
+  noteId    String
+  measurementId String
+  createdAt DateTime @default(now())
+
+  note        CoachNote    @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  measurement Measurement  @relation(fields: [measurementId], references: [id], onDelete: Cascade)
+
+  @@id([noteId, measurementId])
+  @@index([measurementId], map: "idx_coach_note_measurements_measurement")
+  @@map("coach_note_measurements")
+}
+
+model Challenge {
+  id           String              @id @default(cuid())
+  slug         String              @unique @db.VarChar(64)
+  title        String              @db.VarChar(120)
+  summary      String              @db.VarChar(280)
+  description  String?             @db.VarChar(500)
+  frequency    ChallengeFrequency  @default(WEEKLY)
+  targetCount  Int                 @default(3)
+  rewardLabel  String?             @db.VarChar(120)
+  rewardPoints Int                 @default(0)
+  rewardBonusMinutes Int           @default(0)
+  startsAt     DateTime?
+  endsAt       DateTime?
+  isActive     Boolean             @default(true)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  tasks          ChallengeTask[]
+  participations ChallengeParticipation[]
+
+  @@index([isActive, frequency], map: "idx_challenges_active_frequency")
+  @@index([endsAt], map: "idx_challenges_ends_at")
+  @@map("challenges")
+}
+
+model ChallengeTask {
+  id          String   @id @default(cuid())
+  challengeId String
+  title       String   @db.VarChar(120)
+  instructions String? @db.VarChar(300)
+  order       Int      @default(0)
+  targetCount Int      @default(1)
+  createdAt   DateTime @default(now())
+
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  progress  ChallengeProgress[]
+
+  @@index([challengeId, order], map: "idx_challenge_tasks_order")
+  @@map("challenge_tasks")
+}
+
+model ChallengeParticipation {
+  id             String           @id @default(cuid())
+  challengeId    String
+  userId         String
+  status         ChallengeStatus  @default(ACTIVE)
+  progressCount  Int              @default(0)
+  streakCount    Int              @default(0)
+  rewardClaimed  Boolean          @default(false)
+  lastProgressAt DateTime?
+  joinedAt       DateTime         @default(now())
+  completedAt    DateTime?
+
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  progress  ChallengeProgress[]
+
+  @@unique([challengeId, userId], map: "idx_participations_unique")
+  @@index([userId, status], map: "idx_participations_user_status")
+  @@map("challenge_participations")
+}
+
+model ChallengeProgress {
+  id               String   @id @default(cuid())
+  participationId  String
+  taskId           String?
+  quantity         Int      @default(1)
+  notedAt          DateTime @default(now())
+  bonusSpinGranted Boolean  @default(false)
+  treatBonusMinutes Int     @default(0)
+
+  participation ChallengeParticipation @relation(fields: [participationId], references: [id], onDelete: Cascade)
+  task          ChallengeTask?         @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([participationId, notedAt], map: "idx_progress_participation_noted")
+  @@map("challenge_progress")
+}
+
+model ReferralInvite {
+  id             String          @id @default(cuid())
+  inviterId      String
+  inviteeEmail   String          @db.VarChar(320)
+  inviteeName    String?         @db.VarChar(120)
+  inviteCode     String          @unique @db.VarChar(16)
+  status         ReferralStatus  @default(PENDING)
+  inviteeUserId  String?
+  waitlistOptIn  Boolean         @default(false)
+  acceptedAt     DateTime?
+  canceledAt     DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  inviter   User @relation("ReferralsSent", fields: [inviterId], references: [id], onDelete: Cascade)
+  invitee   User? @relation("ReferralsReceived", fields: [inviteeUserId], references: [id], onDelete: SetNull)
+
+  @@index([inviterId, createdAt], map: "idx_referral_inviter_created")
+  @@index([inviteCode], map: "idx_referral_code_lookup")
+  @@unique([inviterId, inviteeEmail], map: "idx_referral_unique_email_per_inviter")
+  @@map("referral_invites")
 }

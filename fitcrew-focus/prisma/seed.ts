@@ -6,6 +6,9 @@ import {
   PostVisibility,
   AiCommentStatus,
   FollowStatus,
+  ChallengeFrequency,
+  ChallengeStatus,
+  ReferralStatus,
 } from "@prisma/client";
 import { hash } from "bcryptjs";
 
@@ -27,6 +30,7 @@ async function main() {
       passwordHash: ayseHash,
       avatarUrl: "https://cdn.fitcrew.local/avatars/ayse.png",
       defaultVisibility: PostVisibility.FOLLOWERS,
+      referralCode: "AYSEFIT1",
     },
   });
 
@@ -39,6 +43,7 @@ async function main() {
       email: "mert@example.com",
       passwordHash: mertHash,
       avatarUrl: "https://cdn.fitcrew.local/avatars/mert.png",
+      referralCode: "MERTPOWR",
     },
   });
 
@@ -134,6 +139,124 @@ async function main() {
         commentPreview: "Super gozukuyor! Tarifini paylasir misin?",
         actorHandle: mert.handle,
       },
+    },
+  });
+
+  await prisma.coachNote.create({
+    data: {
+      coachId: mert.id,
+      memberId: ayse.id,
+      origin: "MANUAL",
+      title: "Haftalik ilerleme \u00F6zeti",
+      body:
+        "Bel \u00F6l\u00E7\u00FCnde istikrarl\u0131 azalma g\u00F6r\u00FCn\u00FCyor. Su t\u00FCketimini 2.5L seviyesinde tut ve haftal\u0131k 2 y\u00FCr\u00FCy\u00FC\u015F planla.",
+      tags: ["trend", "motivasyon"],
+      posts: {
+        create: [
+          {
+            post: {
+              connect: { id: post.id },
+            },
+          },
+        ],
+      },
+      measurements: {
+        create: [
+          {
+            measurement: {
+              connect: { id: measurement.id },
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  const challenge = await prisma.challenge.upsert({
+    where: { slug: "haftalik-yuruyus-3x" },
+    update: {},
+    create: {
+      slug: "haftalik-yuruyus-3x",
+      title: "Haftada 3 Y\u00FCr\u00FCy\u00FC\u015F",
+      summary: "Enerji toplamak i\u00E7in haftada en az 3 kez 30 dakikal\u0131k y\u00FCr\u00FCy\u00FC\u015F yap.",
+      description:
+        "Ko\u00E7 tavsiyesi: En az 30 dakika h\u0131zl\u0131 tempo y\u00FCr\u00FCy\u00FC\u015F ile kardiyo sistemini aktif tut.",
+      frequency: ChallengeFrequency.WEEKLY,
+      targetCount: 3,
+      rewardLabel: "25 Treat puan\u0131 + 15 dk bonus y\u00FCr\u00FCy\u00FC\u015F",
+      rewardPoints: 25,
+      rewardBonusMinutes: 15,
+      startsAt: new Date(),
+      tasks: {
+        create: [
+          {
+            title: "30 dk y\u00FCr\u00FCy\u00FC\u015F",
+            instructions: "H\u0131zl\u0131 tempo ile 30 dakika boyunca aktif kal.",
+            order: 0,
+            targetCount: 3,
+          },
+        ],
+      },
+    },
+    include: { tasks: true },
+  });
+
+  const participation = await prisma.challengeParticipation.create({
+    data: {
+      challengeId: challenge.id,
+      userId: ayse.id,
+      status: ChallengeStatus.ACTIVE,
+      progressCount: 2,
+      streakCount: 4,
+      rewardClaimed: false,
+      lastProgressAt: new Date(),
+      progress: {
+        create: [
+          {
+            taskId: challenge.tasks[0]?.id,
+            quantity: 1,
+            notedAt: new Date(),
+            treatBonusMinutes: 5,
+          },
+          {
+            taskId: challenge.tasks[0]?.id,
+            quantity: 1,
+            notedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+            treatBonusMinutes: 5,
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.challengeProgress.create({
+    data: {
+      participationId: participation.id,
+      quantity: 1,
+      notedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+      treatBonusMinutes: 5,
+    },
+  });
+
+  await prisma.referralInvite.create({
+    data: {
+      inviterId: ayse.id,
+      inviteeEmail: "zeynep@example.com",
+      inviteeName: "Zeynep Demir",
+      inviteCode: "AYSEZNP1",
+      status: ReferralStatus.PENDING,
+      waitlistOptIn: true,
+    },
+  });
+
+  await prisma.referralInvite.create({
+    data: {
+      inviterId: ayse.id,
+      inviteeEmail: "mehmet@example.com",
+      inviteCode: "AYSEMHM2",
+      status: ReferralStatus.ACCEPTED,
+      inviteeUserId: mert.id,
+      acceptedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
     },
   });
 }

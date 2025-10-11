@@ -1,148 +1,60 @@
-# Proje Yol Haritası (TombistenFite)
+# FitCrew Focus Roadmap
 
-Bu yol haritası; mobil odaklı Next.js (App Router) + Tailwind CSS + DaisyUI arayüzü, Supabase (Auth/DB/Storage) ve Vercel üzerinde CI/CD ile üretime açılacak bir MVP’yi hedefler. Varsayılan dil Türkçe’dir.
+Bu yol haritasi 11.10.2025 itibariyla backend calismalarinin durumunu ozetler.
 
-## 0. Hazırlık (Tamamlandı)
-- Ortam değişkenleri akışı: `.env.local` + script’ler (`scripts/env/*`).
-- Vercel link ve deploy akışı: `make vercel:deploy`.
-- GitHub Secrets ve Vercel env senkronu: `make env:github:push`, `make env:vercel:push`.
-- Supabase CLI login: `make supabase:login`.
+## Tamamlanan Basliklar
 
-## 1. Mimari ve Temel Altyapı
-- UI/Kit: Tailwind CSS + DaisyUI kurulumu, tema ve mobil-first layout.
-- Dosya yapısı: `src/app/(public)`, `src/app/(auth)`, `src/app/(app)` segmentleri.
-- Ortak bileşenler: alt navigasyon, üst bar, kart, form kontrolleri, modal/drawer.
-- i18n: Türkçe metin anahtarı altyapısı (`locales/tr/`), basit helper.
-- Hata ve boş durum ekranları (Türkçe).
+- **S01 - Setup:** Next.js App Router, PWA manifest, eslint/prettier/env yapilandirmalari tamamlandi.
+- **S02 - Prisma:** Cekirdek modeller tanimlandi, 20251009194409_init migrasyonu ve seed senaryosu guncellendi.
+- **S03 - Auth / JWT:** Auth ve kullanici uclari yayinda; JWT uretimi/dogrulamasi ve env kontrolleri aktif.
+- **S04 - Upload Presign:** S3 presign yardimcilari ve MIME/limit kontrolleri hazir.
+- **S05 - Posts API:** Post CRUD, scope bazli feed, begeni ve rapor uclari devrede. Erisim ve cursor senaryolari icin Vitest tabanli unit testler eklendi; hata mesajlari Turkce dilbilgisine gore revize edildi.
+- **S06 - Comments API:** /posts/{id}/comments GET/POST uclari, cursor bazli sayfalama, commentsCount artisi ve serializeComment serilestiricisi tamamlandi; tests/app/api/posts/[id]/comments/route.test.ts ile erisim ve olusturma senaryolari kapsandi.
+- **S07 - Follow & Explore:** POST/DELETE /users/{id}/follow, GET /users/{id}/followers, GET /users/{id}/following ve GET /search/users uclari hazirlandi; cursor bazli takibi listeleri ve arama regresyonlari tests/app/api/users/follow/route.test.ts, tests/app/api/users/followers/route.test.ts, tests/app/api/search/users/route.test.ts ile kapsandi.
+- **S08 - Measurements & Analytics (API):** /measurements GET/POST uclari tamamlandi; cursor bazli listeleme, tarih filtresi ve tek transaction ile olcum ekleme destegi saglandi. serializeMeasurement eklendi ve tests/app/api/measurements/route.test.ts ile regresyon altina alindi.
+- **S09 - Treats Wheel:** Kacamak item CRUD'u, eligibility servisi ve bonus/spin akislari tamamlandi. /treats/items, /treats/spins, /treats/eligibility rotalari eklendi; RNG deterministik secim, kg/kullanim kisitlari ve bonus guncelleme akisi Vitest kapsaminda dogrulandi.
+- **S10 - AI Comment:** OpenAI entegrasyonu, processNextAiComment kuyugu ve cron tetige POST /api/ai-comments/run rotasi eklendi. AI cevaplari icin JSON zorlamasi, hata durumlarinda FAILED geribildirimi ve kullanici bazli yeniden deneme (POST /api/posts/{id}/ai-comment/retry) saglandi; tum akislara unit testler eklendi.
+- **S11 - Rate Limit & Errors & ETag:** jsonError/jsonSuccess altyapisi standart hata govdesi, X-Trace-Id basligi ve GET yanitlari icin ETag destegi saglayacak sekilde genisletildi. Post olusturma, yorum ekleme ve Treat Wheel spin akislari Redis/LRU tabanli rate limit ile korunuyor; X-RateLimit-* ve Retry-After basliklari yayina alindi. tests/app/api/posts/route.test.ts, tests/app/api/posts/[id]/comments/route.test.ts ve tests/app/api/treats/spins/route.test.ts senaryolari yeni davranisi dogruluyor.
+- **S12 - Notifications:** Bildirim API'lari (GET /api/notifications, PATCH /api/notifications/{id}/ack, POST /api/notifications/ack-all) yayina alindi. Post begenisi, yorum, takip, AI yorum hazirlama ve Treat Wheel bonuslari icin queueNotificationsForEvent fan-out servisi eklendi; okunmamis sayac Redis cache + invalidation ile desteklendi. Vitest kapsaminda yeni rotalar ve servis davranislari icin testler yazildi.
+- **S13 - UI Wiring (Mobil Katman):** Next.js App Router uzerinde MobileLayout, safe-area (pt-safe/pb-safe/px-safe) yardimcilari ve NotificationProvider baglanti katmani olusturuldu. feed, measurements, treats, notifications ve profile sayfalari DaisyUI/Tailwind bilesenleriyle mobil oncelikli sekilde hazirlandi; API erisimleri icin apiFetch yardimcisi ve fallback-data senaryolari eklendi. Bildirim rozeti Header ve BottomTabBar uzerinde paylasilan durum ile guncelleniyor; tests/lib/app-data.test.ts ve tests/components/notification-context.test.tsx ile yeni baglanti katmani regresyon altina alindi.
+- **S14 - ENV & Docs & Smoke Tests:** .env.example dosyasi zorunlu/opsiyonel anahtar aciklamalari ve ornek degerlerle guncellendi; README ve docs/TROUBLESHOOTING.md gelistirilerek make/pnpm akislari, mobil kurulum ve sorun giderme rehberi derlendi. scripts/smoke/smoke-api.ts ile pnpm smoke:api komutu eklendi ve CI surecine dahil edildi; Makefile ve Github Actions pipeline'i yeni smoke adimini calistiracak sekilde revize edildi.
+- **S15 - Progress Insights & Coach Panel:** CoachNote modeli, post/olcum baglantilari ve fallback seed senaryosu eklendi. /api/insights/progress ucu haftalik/aylik trend serilerini, Treat Wheel istatistiklerini ve ko\u00E7 notu \u00F6zetlerini JSON olarak d\u00F6nd\u00FCr\u00FCho; serializeCoachNote ile mobil katmana uygun veri saglandi. Mobilde yeni \u0130lerleme ekran\u0131 Recharts tabanl\u0131 kartlarla kilo/bel grafigi ve Treat Wheel aktivitesini g\u00F6steriyor, ko\u00E7 notlar\u0131 DaisyUI kartlar\u0131nda listeleniyor. tests/server/insights/progress.test.ts ve tests/app/api/insights/progress/route.test.ts ile regresyon kapsam\u0131 genisletildi; BottomTabBar \u0130lerleme sekmesine guncellendi.
+- **S16 - Challenges & Routine Gamification:** Challenge/Task/Participation/Progress modelleri tanimlandi, seed senaryosuna haftalik yuruyus ornegi eklendi. `/api/challenges` GET ucu aktif challenge listesini dondururken, `/api/challenges/{id}/join` ve `/api/challenges/{id}/progress` katilim ve ilerleme kaydini sagliyor. serializeChallenge ile mobil katmanda streak, kalan adim ve odul durumu gosteriliyor; Feed sayfasina ChallengeCard bileseni eklenerek katilim/ilerleme butonlari API'lerle entegre edildi. tests/server/challenges/service.test.ts, tests/app/api/challenges/route.test.ts ve tests/lib/app-data.test.ts yeni akislari dogruluyor.
+- **S17 - Growth & Monetization (Referral v1):** ReferralStatus enumu ve ReferralInvite modeli eklendi; kullanici bazli referralCode olusturma, seed davetleri ve fallback verisi saglandi. `/api/referrals` GET/POST akislari davet kodu, istatistik ve davet listesini sunuyor; fetchReferrals fonksiyonu ile tests/app/api/referrals/route.test.ts ve tests/lib/app-data.test.ts yeni davranisi dogruluyor.
 
-## 2. Supabase Entegrasyonu
-- Auth: E-posta/şifreyle kayıt/giriş, magic link (opsiyonel), oturum durumu.
-- DB Şeması (örnek):
-  - `profiles(id, display_name, avatar_url, created_at)`
-  - Uygulamaya özel 1–2 tablo (örn. `posts`, `likes`) ve RLS politikaları.
-- Storage: avatar ve görsel yükleme (isteğe bağlı).
-- API Katmanı: Sunucu eylemleri (server actions) ve `@supabase/supabase-js` ile uçlar.
+## Siradaki Oncelikler
 
-## 3. Özellikler (MVP)
-- Giriş/Kayıt akışı (validasyon, hata mesajları Türkçe).
-- Ana akış/kart listesi (ör. gönderiler, etkileşimler placeholder ile başlayıp gerçek veriyle devam).
-- Profil sayfası (profil düzenleme, avatar yükleme).
-- Basit bildirim/toast ve yükleme iskeletleri.
+- **S17 - Growth & Monetization:** Growth denemeleri ve premium paket icin temel altyapi.
+  - Davet API'si sonrasinda transactional e-posta gonderimi icin servis secimi (Resend/Sendgrid vb.) ve bekleme listesi webhook entegrasyonu tasarlanacak.
+  - Stripe veya Paddle benzeri odeme saglayici secilecek; BillingCustomer modeli ve webhook dinleyicileri icin backlog olusacak.
+  - Paywall ekranlari, izinli ozellikler ve premium metric raporlamasi S13/S15 UI katmanlari ile senkron ilerleyecek.
 
-## 4. Kalite, Test ve Erişilebilirlik
-- Lint/format: ESLint, Prettier ayarlarını tamamla.
-- Test: Component ve server action için temel testler (≥%80 hedef değişen kodda).
-- Erişilebilirlik: DaisyUI bileşenlerinde ARIA ve kontrast gözden geçirme.
+## Teknik Notlar
 
-## 5. CI/CD ve Sürümleme
-- GitHub Actions: Lint + Build, isteğe bağlı test job’ı.
-- Vercel Preview → Production onay akışı.
-- Sürüm notları ve Conventional Commits.
+- Test ortaminda path alias kullanimi icin vitest.config.ts eklendi.
+- Posts, Comments, Follow/Search ve Measurements API'lari icin tests/server/posts/utils.test.ts, tests/app/api/posts/route.test.ts, tests/app/api/posts/[id]/comments/route.test.ts, tests/app/api/users/follow/route.test.ts, tests/app/api/users/followers/route.test.ts, tests/app/api/search/users/route.test.ts ve tests/app/api/measurements/route.test.ts ile temel erisim/sayfalama regresyonlari kapsaniyor. Begeni, rapor, kesfet ve yorum yonetimi icin ek senaryolar backlog'da tutulmali.
+- Rate limit kararlarini kapsayan testler tests/app/api/posts/[id]/comments/route.test.ts ve tests/app/api/treats/spins/route.test.ts uzerinden izlenebilir; 304 yanitlarinda ETag davranisi tests/app/api/posts/route.test.ts ve tests/app/api/treats/spins/route.test.ts ile onaylaniyor.
 
-## 6. İzleme ve Geri Bildirim
-- Basit log/telemetri (opsiyonel).
-- Hata raporlama (opsiyonel: Sentry veya benzeri).
+## Orta Vadeli Basliklar
 
-## 7. Topluluk ve Etkileşim
-- Supabase Realtime ile akış yenilemeleri ve istemci aboneliği.
-- Gönderi etkileşimleri (beğen, yorumla, bildir) ve listeler.
-- Profil paylaşım bağlantıları, kart önizlemeleri ve avatar yedekleri.
-- Moderasyon akışı: Supabase politikalarını sıkılaştır, raporlanan içeriği izole et.
+- **S18 - Nutrition & Meal Plans:** Beslenme hedefleri ve yemek planlama akislari ile icerik genisletilecek.
+  - MealPlan, MealEntry ve makro hedefleri icin Prisma modelleri tanimlanacak; API katmaninda GET/POST /api/meal-plans uclari planlanacak.
+  - Kalori/makro hesaplamalari olcum verisi ile baglanarak haftalik raporlar olusturulacak; coach paneli icin beslenme yorumlari backlog'a alinacak.
+  - Mobil arayuzde yemek plan kartlari, bildirimli hatirlatmalar ve plan sapma bildirimleri DaisyUI bilesenleri ile prototiplenecek.
+- **S19 - Integrations & Automations:** Dis veri kaynaklari ve otomasyon akislari birlestirilecek.
+  - Apple HealthKit / Google Fit baglanti servisleri icin OAuth flow'lari ve veri cekme job'lari tanimlanacak.
+  - Webhook tuketimi icin syncExternalMeasurement kuyugu ve tekrar deneme stratejileri belirlenecek; cron tetikleyicileri scripts/scheduled/ altinda gruplanacak.
+  - Veri importu sonrasi anomaly detection ve kullanici bildirimleri icin Vitest + Playwright senaryolari eklenerek regresyon surece dahil edilecek.
 
-## 8. Deneyim ve Özelleştirme
-- Tema geçişi: ayarlar sayfasında kalıcı tercih ve sistem temasını algılama.
-- Bildirimler: toast yığınını standartlaştır, e-posta uyarıları için Supabase tetikleyicisi hazırla.
-- Onboarding ilerlemesi: Starter kartını tamamlayan kullanıcıya ilerleme göstergesi ve kutlama ekle.
-- Görsel yükleme: boyut optimizasyonu, CDN cache kontrolleri ve hata mesajlarını standartlaştır.
+## Uzun Vadeli Basliklar
 
-## 9. Yayına Hazırlık ve Büyüme
-- Kapalı beta yayını, geri bildirim formu ve Supabase aracılığıyla geri bildirim saklama.
-- PWA hazırlığı: manifest, ikon setleri, Add to Home Screen testi.
-- Landing sayfası/dokümantasyonla ürün hikayesini anlat, ekran görüntüleri ekle.
-- Metrikler: aktif kullanıcı, gönderi hacmi ve retention için Supabase raporlama ve dashboard taslağı.
+- **S20 - Observability & Compliance:** Sistem sagligi ve veri guvenligi cercevesi olgunlastirilacak.
+  - OpenTelemetry tabanli tracing/logging, Redis/Postgres metrik panelleri ve uyarilar icin Grafana dashboard'lari olusturulacak.
+  - Kisisel veri saklama sureleri, silme istekleri ve audit log gereksinimleri icin data-retention dokumani ve yonetim scriptleri hazirlanacak.
+  - SOC2/GDPR kontrol listeleri, acik kaynak kitaplik lisans taramalari ve incident response rehberi docs/security/ altinda derlenecek.
 
-## 10. Performans ve Ölçeklenebilirlik
-- Görsel optimizasyonu: `next/image` kullanımı, uygun `sizes` ve kalite ayarları.
-- ISR/SSG/SSR stratejileri: kritik sayfalar için ISR; liste sayfalarında segment bazlı revalidate.
-- Vercel Edge/Cache: yönlendirmeler ve statik varlıklar için cache başlıkları.
-- Postgres indeksleri ve sorgu gözden geçirme; RLS kuralları altında performans testleri.
+## Onerilen Hemen Sonraki Is
 
-## 11. Güvenlik ve Uygunluk
-- Güvenlik başlıkları: `Content-Security-Policy`, `X-Frame-Options`, `Strict-Transport-Security`.
-- Oran sınırlama (rate limiting) ve basit bot koruması (middleware tabanlı).
-- Denetim kayıtları (audit log): kritik eylemler için tablo ve tetikleyici.
-- Gizlilik: veri saklama politikası ve silme talebi akışı (opsiyonel).
-
-## 12. Arama ve Keşif
-- Postgres tam metin arama (TSVector/TSQuery) veya `pg_trgm` benzerlik araması.
-- Filtreleme ve sıralama: tarih, popülerlik, kullanıcı takiplerine göre.
-- Etiket/konu sisteminin eklenmesi ve ilgili sayfa/akışlar.
-
-## 13. Bildirimler ve Realtime Gelişimleri
-- PWA push bildirimleri (Service Worker) ve izin akışı.
-- Uygulama içi bildirim “gelen kutusu” ve okundu/okunmadı durumu.
-- E-posta tetikleyicileri: önemli eylemler için (opsiyonel Supabase Functions/Webhooks).
-
-## 14. Monetizasyon ve Faturalandırma (Opsiyonel)
-- Paket/plan modeli (Ücretsiz, Pro vb.) ve yetkilendirme kontrolleri.
-- Stripe ile test ortamında ödeme akışı ve webhook doğrulaması.
-- Fatura geçmişi ve abonelik durumu sayfası.
-
----
-## Backlog (Örnek İşler)
-- [x] Tailwind + DaisyUI kur, tema tanımları ve tipografi.
-- [x] Alt navigasyon, app layout ve kart bileşenleri.
-- [x] i18n anahtar sistemi ve örnek dil dosyası (`locales/tr/common.json`).
-- [x] Supabase auth: sign up/in/out ekranları ve temel durum yönetimi (RequireAuth ile yönlendirme)
-- [x] DB şeması: `profiles` tablosu ve RLS politikaları (migration + push)
-- [x] DB şeması migration’ları ve RLS politikaları (profiles, posts, avatars storage).
-- [x] Profil sayfası (oku/güncelle) + avatar yükleme.
-- [x] Akış sayfası: liste + görsel paylaşımı, boş/hata durumları.
-- [x] Lint/format + temel unit tests (UI ve server actions).
-- [x] GitHub Actions ile CI (lint/build/test) ve Vercel entegrasyonu.
-- [x] Ayarlar: tema geçişi tercihlerini Supabase profiline kaydet ve arayüzü tamamla.
-- [x] Supabase Realtime aboneliğiyle akış sayfasını otomatik güncelle.
-- [x] Gönderiler için beğeni ve yorum sunucu eylemleri ile mobil odaklı arayüz ekle.
-- [x] PWA manifesti ve ikon setlerini tamamla, mobil kısayol testlerini belgele.
-- [ ] ISR ve revalidate stratejilerini sayfa bazında yapılandır (liste/ayrıntı).
-- [ ] Postgres tam metin arama + filtre/sort UI’sı.
-- [ ] Güvenlik başlıkları ve oran sınırlama middleware’i.
-- [ ] Basit audit log şeması ve kritik eylem kaydı.
-- [ ] PWA push bildirimi ve uygulama içi bildirim gelen kutusu.
-- [ ] Stripe test entegrasyonu, webhook doğrulaması ve plan yetkilendirmeleri.
-
-## Kabul Kriterleri (MVP)
-- Mobilde akıcı çalışan temel UI (ana akış + profil + auth).
-- Supabase ile kalıcı kimlik doğrulama ve temel veri işlemleri.
-- Production deploy (Vercel) ve dokümante kurulabilirlik.
-- Türkçe arayüz ve hata mesajları.
-
-## Kabul Kriterleri (Beta)
-- Ana akışta ISR + cache ile düşük TTFB ve istikrarlı yüklenme.
-- Güvenlik başlıkları aktif, temel rate limiting çalışır durumda.
-- En az bir arama/filtreleme senaryosu gerçek veride hızlı sonuç verir.
-- Bildirimler: uygulama içi gelen kutusu ve en az bir push senaryosu doğrulanmış.
-
-## Kabul Kriterleri (v1)
-- Ödeme (opsiyonel) akışı uçtan uca test ortamında problemsiz çalışır.
-- Analitik temel olaylar kaydediliyor; ürün sağlık metrikleri izlenebilir.
-- Performans bütçeleri tanımlı; kritik sayfalarda LCP/FID hedefleri sağlanır.
-
-## Notlar ve Kararlar
-- Gizli bilgiler `.env.local`’da; repo’ya yazılmaz.
-- Yeni metinler i18n anahtarı olarak eklenir, doğrudan string gömülmez.
-- Tek PR tek konu; doküman ve değişen davranışlar güncellenir.
-- Ana sayfaya mobil onboarding odaklı 'Starter Kartı' eklendi; oturum durumuna göre CTA yönlendiriliyor.
-- Tema geçişi kullanıcı profiline kaydedilecek; ayarlar ekranı bu tercih üstünden çalışacak.
-- Akış gerçek zamanlı yenilemeler Supabase Realtime ile sağlanacak; çevrimdışı fallback olarak manuel yenileme korunacak.
-- Ödeme ve gelişmiş analitik opsiyoneldir; gizlilik ve güvenlik başlıkları zorunlu tutulacaktır.
-- Prettier + Vitest altyapısı `npm run format` ve `npm run test` komutlarıyla devreye alındı.
-- GitHub Actions CI hattı (`.github/workflows/ci.yml`) lint/test/build aşamalarını çalıştırır; Vercel dağıtımı için `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` secret'larının tanımlı olması gerekir.
-- Tema tercihi ThemeProvider ile Supabase profiline yazılarak cihazlar arasında senkronlanıyor.
-- Akış sayfası Supabase Realtime kanalından INSERT/UPDATE/DELETE olaylarını dinleyip en fazla 20 kaydı canlı güncelliyor.
-- Realtime bağlantısı hata aldığında kullanıcıya uyarı gösterilip yeniden bağlanma seçeneği sunuluyor; yeni gönderiler rozetle vurgulanıyor.
-- Akış kartları beğeni/yorum sayaçları ve mobil yorum paneli ile etkileşim odaklı hale getirildi.
-- PWA manifesti ve maskable ikonlar eklendi; uygulama ana ekrana eklenmek için uygun hale getirildi.
- - Mobil UX/UI referans kılavuzu eklendi: `docs/UX_MOBILE_GUIDE.md`. PR'larda “Mobil UX Checklist” zorunlu tutulacaktır; iPhone güvenli alanları (safe area) için `viewport-fit=cover` ve `pt-safe`/`pb-safe` yardımcıları uygulanacaktır.
-- Lovable kaynaklı `fitcrew-focus/` Next.js + Prisma uygulaması ana kod tabanı olarak kabul edildi; önceki `webapp/` dizini devre dışı bırakıldı.
-- Supabase `TombistenFite` projesi aynı şekilde kullanılacak; Prisma migrations Supabase Postgres üzerinde koşturulacak, Vercel projesi mevcut ayarlarla (`rootDirectory: fitcrew-focus`) güncellendi.
+1. Transactional e-posta saglayici (Resend/Sendgrid vb.) secimini yapip davet gonderim/opt-in webhook gereksinimlerini taslakla; bekleme listesi icin queue/scheduler ihtiyaclarini belirle.
+2. Premium paywall ve izinli ozellikler icin UI/State akislari haritasini cikar, hangi ekranlarda kilitleme yapilacagini ve raporlama hedeflerini netlestir.
+3. Challenges -> Treat Wheel odul entegrasyonu icin bildirim ve bonus hesaplama kurallarini backlog'da ayrintilandir; odul dagitim otomasyon gereksinimlerini topla.

@@ -46,18 +46,25 @@ Bu dokuman, tek oturumluk calisma planindaki adimlarin mevcut durumunu ozetler v
 - **S14 - ENV & Docs & Smoke Tests**  
   .env.example zorunlu/opsiyonel anahtar aciklamalari ve ornek degerlerle guncellendi, README ile docs/TROUBLESHOOTING.md yeniden yazilarak make/pnpm akislari dokumante edildi. scripts/smoke/smoke-api.ts betigi ve pnpm smoke:api komutu olusturuldu; Makefile ile GitHub Actions pipeline'i smoke adimini calistiracak sekilde revize edildi.
 
+- **S15 - Progress Insights & Coach Panel**  
+  CoachNote modeli, post/olcum baglantilari ve seed verisi eklendi. `/api/insights/progress` ucu haftalik/aylik trend, Treat Wheel istatistikleri ve ko\u00E7 notu \u00F6zetleri d\u00F6nd\u00FCr\u00FCho; `serializeCoachNote` ile mobil katmana uygun JSON saglandi. Mobilde yeni \u0130lerleme ekran\u0131 Recharts tabanl\u0131 grafikler ve DaisyUI ko\u00E7 kartlar\u0131yla yayina alindi; BottomTabBar \u0130lerleme sekmesine guncellendi. `tests/server/insights/progress.test.ts`, `tests/app/api/insights/progress/route.test.ts` ve `tests/lib/app-data.test.ts` ile regresyon kapsam\u0131 genisledi.
+- **S16 - Challenges & Routine Gamification**  
+  Challenge/Task/Participation/Progress modelleri tanimlandi; `/api/challenges`, `/api/challenges/{id}/join` ve `/api/challenges/{id}/progress` uclari yayina alindi. serializeChallenge ile mobil katmanda streak, kalan adim ve odul durumu gosteriliyor. Feed sayfasina ChallengeCard bileseni eklenerek katilim/ilerleme butonlari API'lerle entegre edildi; tests/server/challenges/service.test.ts, tests/app/api/challenges/route.test.ts ve tests/lib/app-data.test.ts yeni akislari dogruladi.
+- **S17 - Growth & Monetization (Referral v1)**  
+  ReferralStatus enumu, ReferralInvite modeli ve kullanici bazli referralCode alani eklendi. `/api/referrals` GET/POST akislari davet kodu, ozet istatistik ve davet listesini donduruyor; fetchReferrals fonksiyonu fallback verisiyle birlikte yayinda. tests/app/api/referrals/route.test.ts ve tests/lib/app-data.test.ts yeni davranisi dogruluyor; seed senaryosuna ornek davetler eklendi.
+
 ## Devam Eden Adimlar
 
-- **S15 - Progress Insights & Coach Panel**  
-  Analitik API'larinin (ozellikle `/api/insights/progress`) tasarimi ve CoachNote veri modelinin olusturulmasi icin analiz yapiliyor. Mobil coach paneli icin grafik kitapligi secimi ve DaisyUI uyumlu kart taslaklari hazirlaniyor.
+- **S17 - Growth & Monetization**  
+  Davet akisi sonrasi transactional e-posta servisi secimi, bekleme listesi webhook entegrasyonu ve premium paywall icin ekran/izin haritalari uzerinde calisma suruyor. Stripe/Paddle PoC'i ve odeme olaylari icin webhook altyapisi backlog'da.
 
 ## Orta Vadeli Basliklar
 
-- **S16 - Challenges & Routine Gamification**  
-  Prisma modelleri ve `/api/challenges` uclariyla meydan okuma/rutin takibi saglanacak; Treat Wheel ve bildirim sistemiyle baglantili rozet/kredi odulleri tasarlanacak. Mobilde `Tasks` ve `Streak` kartlari `BottomNav` altinda konumlanacak.
+- **S18 - Nutrition & Meal Plans**  
+  MealPlan/MealEntry modelleri, makro hedefleri ve haftalik raporlar icin API tasarimi backlog'da. Mobilde yemek plan kartlari ve hatirlatma akislari DaisyUI bilesenleriyle prototiplenecek.
 
-- **S17 - Growth & Monetization**  
-  Referral akisi (`/api/referrals`), odeme saglayici secimi (Stripe/Paddle) ve `BillingCustomer` + webhook altyapisi backlog'a alindi; premium paywall ve raporlar S13 UI katmani ile senkron ilerleyecek.
+- **S19 - Integrations & Automations**  
+  Apple HealthKit / Google Fit baglantisi, webhook tuketimi ve cron job'lar icin altyapi calismalari planlaniyor. Anomali tespiti ve bildirim stratejileri Vitest/Playwright senaryolariyla desteklenecek.
 
 ## Su Anki Riskler / Notlar
 
@@ -67,6 +74,6 @@ Bu dokuman, tek oturumluk calisma planindaki adimlarin mevcut durumunu ozetler v
 
 ## Onerilen Hemen Sonraki Is
 
-1. S15 kapsaminda `/api/insights/progress` icin Prisma model taslagini hazirla ve olcum/treat baglantilarini krokilendir.
-2. CoachNote icin API tasarimini (CRUD + bildirim entegrasyonu) netlestir ve gerekecek migrasyon adimlarini planla.
-3. Mobil coach paneli icin chart kitapligi seceneklerini (victory-native vs. recharts) karsilastir, UX Mobile Guide ile uyumlu mock hazirla.
+1. Transactional e-posta saglayici (Resend/Sendgrid vb.) secimini yapip davet gonderim/opt-in webhook gereksinimlerini taslakla; bekleme listesi icin queue/scheduler ihtiyaclarini belirle.
+2. Premium paywall ve izinli ozellikler icin ekran/akil haritalarini cikar, hangi sayfalarin kilitlenecegini ve raporlama hedeflerini netlestir.
+3. Challenge tamamlama odullerini Treat Wheel bonuslariyla baglayacak bildirim ve puan kurallarini backlog'da ayrintilandir.

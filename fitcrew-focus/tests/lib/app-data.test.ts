@@ -1,6 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fetchFeed, fetchTreats, fetchUnreadCount } from "@/lib/app-data";
-import { FALLBACK_POSTS, FALLBACK_TREAT_ELIGIBILITY, FALLBACK_TREAT_ITEMS, FALLBACK_TREAT_SPINS, FALLBACK_UNREAD_COUNT } from "@/lib/fallback-data";
+import {
+  fetchFeed,
+  fetchTreats,
+  fetchUnreadCount,
+  fetchProgressInsights,
+  fetchChallenges,
+  fetchReferrals,
+} from "@/lib/app-data";
+import {
+  FALLBACK_CHALLENGES,
+  FALLBACK_POSTS,
+  FALLBACK_TREAT_ELIGIBILITY,
+  FALLBACK_TREAT_ITEMS,
+  FALLBACK_TREAT_SPINS,
+  FALLBACK_UNREAD_COUNT,
+  FALLBACK_PROGRESS_INSIGHTS,
+  FALLBACK_REFERRALS,
+} from "@/lib/fallback-data";
 import { apiFetch, ApiError } from "@/lib/api-client";
 
 vi.mock("@/lib/api-client", async () => {
@@ -38,5 +54,28 @@ describe("app-data fallbacks", () => {
     apiFetchMock.mockRejectedValue(new ApiError(401));
     const count = await fetchUnreadCount();
     expect(count).toBe(FALLBACK_UNREAD_COUNT);
+  });
+
+  it("returns fallback insights when API fails", async () => {
+    apiFetchMock.mockRejectedValue(new ApiError(500));
+    const insights = await fetchProgressInsights();
+    expect(insights.source).toBe("fallback");
+    expect(insights.summary.latestWeightKg).toBe(FALLBACK_PROGRESS_INSIGHTS.summary.latestWeightKg);
+    expect(insights.recentNotes).toEqual(FALLBACK_PROGRESS_INSIGHTS.recentNotes);
+  });
+
+  it("returns fallback challenges when API fails", async () => {
+    apiFetchMock.mockRejectedValue(new ApiError(502));
+    const challenges = await fetchChallenges();
+    expect(challenges.source).toBe("fallback");
+    expect(challenges.challenges).toEqual(FALLBACK_CHALLENGES);
+  });
+
+  it("returns fallback referrals when API fails", async () => {
+    apiFetchMock.mockRejectedValue(new ApiError(500));
+    const referrals = await fetchReferrals();
+    expect(referrals.source).toBe("fallback");
+    expect(referrals.referral.code).toBe(FALLBACK_REFERRALS.referral.code);
+    expect(referrals.invites).toEqual(FALLBACK_REFERRALS.invites);
   });
 });
