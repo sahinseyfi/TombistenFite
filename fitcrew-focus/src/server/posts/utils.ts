@@ -98,7 +98,7 @@ export type PostAccessResult = PostAccessSuccess | PostAccessError;
 
 export async function ensurePostAccess(postId: string | undefined, viewerId: string | null): Promise<PostAccessResult> {
   if (!postId || postId.trim().length === 0) {
-    return { ok: false, status: 400, code: "validation_error", message: "Gonderi kimligi gecersiz" };
+    return { ok: false, status: 400, code: "validation_error", message: "Gecerli bir gonderi kimligi belirtmelisiniz." };
   }
 
   const post = await prisma.post.findUnique({
@@ -107,7 +107,7 @@ export async function ensurePostAccess(postId: string | undefined, viewerId: str
   });
 
   if (!post) {
-    return { ok: false, status: 404, code: "not_found", message: "Gonderi bulunamadi" };
+    return { ok: false, status: 404, code: "not_found", message: "Gonderi bulunamadi." };
   }
 
   if (post.visibility === PostVisibility.PUBLIC || post.authorId === viewerId) {
@@ -115,11 +115,11 @@ export async function ensurePostAccess(postId: string | undefined, viewerId: str
   }
 
   if (!viewerId) {
-    return { ok: false, status: 401, code: "unauthorized", message: "Yetkilendirme gerekli" };
+    return { ok: false, status: 401, code: "unauthorized", message: "Gonderiye erisim icin giris yapmalisiniz." };
   }
 
   if (post.visibility === PostVisibility.PRIVATE) {
-    return { ok: false, status: 403, code: "forbidden", message: "Gonderiye erisim yetkiniz yok" };
+    return { ok: false, status: 403, code: "forbidden", message: "Bu gonderiye erisim yetkiniz yok." };
   }
 
   const follow = await prisma.follow.findUnique({
@@ -133,7 +133,7 @@ export async function ensurePostAccess(postId: string | undefined, viewerId: str
   });
 
   if (!follow || follow.status !== "ACCEPTED") {
-    return { ok: false, status: 403, code: "forbidden", message: "Gonderiye erisim yetkiniz yok" };
+    return { ok: false, status: 403, code: "forbidden", message: "Bu gonderiye erisim yetkiniz yok." };
   }
 
   return { ok: true, post };

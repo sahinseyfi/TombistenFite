@@ -42,11 +42,11 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
 
   const rawId = params.id;
   if (typeof rawId !== "string") {
-    return jsonError({ code: "validation_error", message: "Gonderi kimligi gecersiz" }, 400);
+    return jsonError({ code: "validation_error", message: "Gecerli bir gonderi kimligi belirtmelisiniz." }, 400);
   }
   const postId = rawId.trim();
   if (postId.length === 0) {
-    return jsonError({ code: "validation_error", message: "Gonderi kimligi gecersiz" }, 400);
+    return jsonError({ code: "validation_error", message: "Gecerli bir gonderi kimligi belirtmelisiniz." }, 400);
   }
 
   const access = await ensurePostAccess(postId, viewerId);
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
   });
 
   if (!post) {
-    return jsonError({ code: "not_found", message: "Gonderi bulunamadi" }, 404);
+    return jsonError({ code: "not_found", message: "Gonderi bulunamadi." }, 404);
   }
 
   return jsonSuccess({
@@ -84,21 +84,21 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
 export async function PATCH(request: NextRequest, { params }: RouteContext) {
   const session = authenticate(request);
   if (!session) {
-    return jsonError({ code: "unauthorized", message: "Gonderi duzenlemek icin giris yapin" }, 401);
+    return jsonError({ code: "unauthorized", message: "Gonderi duzenlemek icin giris yapmalisiniz." }, 401);
   }
 
   const rawId = params.id;
   if (typeof rawId !== "string") {
-    return jsonError({ code: "validation_error", message: "Gonderi kimligi gecersiz" }, 400);
+    return jsonError({ code: "validation_error", message: "Gecerli bir gonderi kimligi belirtmelisiniz." }, 400);
   }
   const postId = rawId.trim();
   if (postId.length === 0) {
-    return jsonError({ code: "validation_error", message: "Gonderi kimligi gecersiz" }, 400);
+    return jsonError({ code: "validation_error", message: "Gecerli bir gonderi kimligi belirtmelisiniz." }, 400);
   }
 
   const payload = await request.json().catch(() => null);
   if (!payload) {
-    return jsonError({ code: "invalid_body", message: "Gecersiz JSON govdesi" }, 400);
+    return jsonError({ code: "invalid_body", message: "Gecersiz JSON govdesi alindi." }, 400);
   }
 
   const parsed = updatePostSchema.safeParse(payload);
@@ -106,7 +106,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     return jsonError(
       {
         code: "validation_error",
-        message: "Gonderi verileri dogrulanamadi",
+        message: "Gonderi verileri dogrulanamadi.",
         details: parsed.error.flatten(),
       },
       422,
@@ -122,16 +122,16 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
   });
 
   if (!existing) {
-    return jsonError({ code: "not_found", message: "Gonderi bulunamadi" }, 404);
+    return jsonError({ code: "not_found", message: "Gonderi bulunamadi." }, 404);
   }
 
   const authorId = session.sub ?? "";
   if (authorId.length === 0) {
-    return jsonError({ code: "unauthorized", message: "Giris yapilamadi" }, 401);
+    return jsonError({ code: "unauthorized", message: "Giris bilgileri dogrulanamadi." }, 401);
   }
 
   if (existing.authorId !== authorId) {
-    return jsonError({ code: "forbidden", message: "Gonderiyi duzenleme yetkiniz yok" }, 403);
+    return jsonError({ code: "forbidden", message: "Bu gonderiyi duzenleme yetkiniz yok." }, 403);
   }
 
   const updates: Prisma.PostUpdateInput = {};
@@ -205,21 +205,21 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 export async function DELETE(request: NextRequest, { params }: RouteContext) {
   const session = authenticate(request);
   if (!session) {
-    return jsonError({ code: "unauthorized", message: "Gonderiyi silmek icin giris yapin" }, 401);
+    return jsonError({ code: "unauthorized", message: "Gonderiyi silmek icin giris yapmalisiniz." }, 401);
   }
 
   const rawId = params.id;
   if (typeof rawId !== "string") {
-    return jsonError({ code: "validation_error", message: "Gonderi kimligi gecersiz" }, 400);
+    return jsonError({ code: "validation_error", message: "Gecerli bir gonderi kimligi belirtmelisiniz." }, 400);
   }
   const postId = rawId.trim();
   if (postId.length === 0) {
-    return jsonError({ code: "validation_error", message: "Gonderi kimligi gecersiz" }, 400);
+    return jsonError({ code: "validation_error", message: "Gecerli bir gonderi kimligi belirtmelisiniz." }, 400);
   }
 
   const authorId = session.sub ?? "";
   if (authorId.length === 0) {
-    return jsonError({ code: "unauthorized", message: "Giris yapilamadi" }, 401);
+    return jsonError({ code: "unauthorized", message: "Giris bilgileri dogrulanamadi." }, 401);
   }
 
   const post = await prisma.post.findUnique({
@@ -228,11 +228,11 @@ export async function DELETE(request: NextRequest, { params }: RouteContext) {
   });
 
   if (!post) {
-    return jsonError({ code: "not_found", message: "Gonderi bulunamadi" }, 404);
+    return jsonError({ code: "not_found", message: "Gonderi bulunamadi." }, 404);
   }
 
   if (post.authorId !== authorId) {
-    return jsonError({ code: "forbidden", message: "Gonderiyi silme yetkiniz yok" }, 403);
+    return jsonError({ code: "forbidden", message: "Bu gonderiyi silme yetkiniz yok." }, 403);
   }
 
   await prisma.$transaction(async (tx) => {

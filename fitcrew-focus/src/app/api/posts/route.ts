@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
       break;
     case "following":
       if (!viewerId) {
-        return jsonError({ code: "unauthorized", message: "Takip akisini gormek icin giris yapin" }, 401);
+        return jsonError({ code: "unauthorized", message: "Takip akisini gorebilmek icin giris yapmalisiniz." }, 401);
       }
       where = {
         OR: [
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
       break;
     case "close_friends":
       if (!viewerId) {
-        return jsonError({ code: "unauthorized", message: "Yakin arkadas akisini gormek icin giris yapin" }, 401);
+        return jsonError({ code: "unauthorized", message: "Yakin arkadas akisini gorebilmek icin giris yapmalisiniz." }, 401);
       }
       where = {
         OR: [
@@ -105,12 +105,12 @@ export async function GET(request: NextRequest) {
       break;
     case "me":
       if (!viewerId) {
-        return jsonError({ code: "unauthorized", message: "Kendi gonderilerinizi gormek icin giris yapin" }, 401);
+        return jsonError({ code: "unauthorized", message: "Kendi gonderilerinizi gormek icin giris yapmalisiniz." }, 401);
       }
       where = { authorId: viewerId };
       break;
     default:
-      return jsonError({ code: "validation_error", message: "Gecersiz scope parametresi" }, 422);
+      return jsonError({ code: "validation_error", message: "Gecersiz scope parametresi belirtildi." }, 422);
   }
 
   if (cursor) {
@@ -119,7 +119,7 @@ export async function GET(request: NextRequest) {
       select: { id: true },
     });
     if (!cursorExists) {
-      return jsonError({ code: "invalid_cursor", message: "Cursor parametresi gecersiz" }, 400);
+      return jsonError({ code: "invalid_cursor", message: "Gecersiz cursor parametresi belirtildi." }, 400);
     }
   }
 
@@ -166,7 +166,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const session = authenticate(request);
   if (!session) {
-    return jsonError({ code: "unauthorized", message: "Gonderi olusturmak icin giris yapin" }, 401);
+    return jsonError({ code: "unauthorized", message: "Gonderi olusturmak icin giris yapmalisiniz." }, 401);
   }
 
   const viewer = await prisma.user.findUnique({
@@ -182,12 +182,12 @@ export async function POST(request: NextRequest) {
   });
 
   if (!viewer) {
-    return jsonError({ code: "unauthorized", message: "Kullanici bulunamadi" }, 401);
+    return jsonError({ code: "unauthorized", message: "Kullanici kaydi bulunamadi." }, 401);
   }
 
   const payload = await request.json().catch(() => null);
   if (!payload) {
-    return jsonError({ code: "invalid_body", message: "Gecersiz JSON govdesi" }, 400);
+    return jsonError({ code: "invalid_body", message: "Gecersiz JSON govdesi alindi." }, 400);
   }
 
   const parsed = createPostSchema.safeParse(payload);
@@ -195,7 +195,7 @@ export async function POST(request: NextRequest) {
     return jsonError(
       {
         code: "validation_error",
-        message: "Gonderi verileri dogrulanamadi",
+        message: "Gonderi verileri dogrulanamadi.",
         details: parsed.error.flatten(),
       },
       422,

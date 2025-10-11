@@ -14,22 +14,22 @@ const likeSchema = z.object({
 export async function POST(request: NextRequest, { params }: RouteContext) {
   const session = authenticate(request);
   if (!session) {
-    return jsonError({ code: "unauthorized", message: "Gonderiyi begenmek icin giris yapin" }, 401);
+    return jsonError({ code: "unauthorized", message: "Gonderiyi begenmek icin giris yapmalisiniz." }, 401);
   }
 
   const rawId = params.id;
   if (typeof rawId !== "string") {
-    return jsonError({ code: "validation_error", message: "Gonderi kimligi gecersiz" }, 400);
+    return jsonError({ code: "validation_error", message: "Gecerli bir gonderi kimligi belirtmelisiniz." }, 400);
   }
 
   const postId = rawId.trim();
   if (postId.length === 0) {
-    return jsonError({ code: "validation_error", message: "Gonderi kimligi gecersiz" }, 400);
+    return jsonError({ code: "validation_error", message: "Gecerli bir gonderi kimligi belirtmelisiniz." }, 400);
   }
 
   const payload = await request.json().catch(() => null);
   if (!payload) {
-    return jsonError({ code: "invalid_body", message: "Gecersiz JSON govdesi" }, 400);
+    return jsonError({ code: "invalid_body", message: "Gecersiz JSON govdesi alindi." }, 400);
   }
 
   const parsed = likeSchema.safeParse(payload);
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
     return jsonError(
       {
         code: "validation_error",
-        message: "Begeni istegi dogrulanamadi",
+        message: "Begeni istegi dogrulanamadi.",
         details: parsed.error.flatten(),
       },
       422,
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
 
   const userId = session.sub.trim();
   if (userId.length === 0) {
-    return jsonError({ code: "unauthorized", message: "Giris yapilamadi" }, 401);
+    return jsonError({ code: "unauthorized", message: "Giris bilgileri dogrulanamadi." }, 401);
   }
 
   const access = await ensurePostAccess(postId, userId);
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
   });
 
   if (!result) {
-    return jsonError({ code: "not_found", message: "Gonderi bulunamadi" }, 404);
+    return jsonError({ code: "not_found", message: "Gonderi bulunamadi." }, 404);
   }
 
   return jsonSuccess({ likesCount: result.likesCount });

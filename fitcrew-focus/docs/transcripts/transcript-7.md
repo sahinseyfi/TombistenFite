@@ -1,0 +1,2 @@
+- `pnpm test` → `pnpm typecheck` → `pnpm build` sıralı doğrulamasını çalıştırdım; tamamı yeşil geçti (Vitest 1 dosya, TSC noEmit, Next.js prod build).
+- Build risk kaydını güncelledim: `pnpm build` 10.10.2025 tarihinde yeşil, ileriye dönük tekrar çalıştırma notu eklendi (`fitcrew-focus/docs/PLAN_STATUS.md:56`).
