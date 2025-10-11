@@ -1,6 +1,7 @@
 "use client";
 
 import type { ComponentType, SVGProps } from "react";
+import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, CircleDashed, Home, TrendingUp, User } from "lucide-react";
@@ -9,7 +10,7 @@ import { useNotificationState } from "./notification-context";
 
 type TabConfig = {
   name: string;
-  href: string;
+  href: Route;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   isAction?: boolean;
   withBadge?: boolean;
