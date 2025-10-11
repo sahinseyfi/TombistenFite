@@ -13,12 +13,14 @@ export class ApiError extends Error {
   public readonly status: number;
   public readonly code?: string;
   public readonly details?: unknown;
+  public readonly cause?: unknown;
 
   constructor(status: number, payload: ApiErrorPayload = {}, cause?: unknown) {
-    super(payload.message ?? `API hatası (${status})`, { cause });
+    super(payload.message ?? `API hatası (${status})`);
     this.status = status;
     this.code = payload.code;
     this.details = payload.details;
+    this.cause = cause;
   }
 }
 
