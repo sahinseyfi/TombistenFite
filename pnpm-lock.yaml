@@ -210,9 +210,6 @@ importers:
         specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
-      '@embedded-postgres/windows-x64':
-        specifier: 17.6.0-beta.15
-        version: 17.6.0-beta.15
       '@eslint/eslintrc':
         specifier: ^3.1.0
         version: 3.3.1
@@ -5108,7 +5105,8 @@ snapshots:
   '@embedded-postgres/linux-x64@17.6.0-beta.15':
     optional: true
 
-  '@embedded-postgres/windows-x64@17.6.0-beta.15': {}
+  '@embedded-postgres/windows-x64@17.6.0-beta.15':
+    optional: true
 
   '@emnapi/core@1.5.0':
     dependencies:
