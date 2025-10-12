@@ -1,15 +1,1 @@
-{
-  "projectId": "prj_OcJuVJN8Gqczfz2h6FQv32Nn9AoC",
-  "orgId": "team_rjufHepm7Evu0i1HetMuTfiU",
-  "projectName": "tombistenfite",
-  "settings": {
-    "framework": "nextjs",
-    "devCommand": "pnpm dev",
-    "installCommand": "pnpm install",
-    "buildCommand": "pnpm build",
-    "outputDirectory": null,
-    "rootDirectory": "fitcrew-focus",
-    "directoryListing": false,
-    "nodeVersion": "22.x"
-  }
-}
+{"projectId":"prj_OcJuVJN8Gqczfz2h6FQv32Nn9AoC","orgId":"team_rjufHepm7Evu0i1HetMuTfiU","projectName":"tombistenfite"}
