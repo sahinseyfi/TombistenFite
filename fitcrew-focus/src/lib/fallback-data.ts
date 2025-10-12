@@ -7,8 +7,6 @@ import type { SerializedCoachNote } from "@/server/serializers/coach-note";
 import type { SerializedChallenge } from "@/server/serializers/challenge";
 import type { ProgressInsights } from "@/server/insights/progress";
 import type { SerializedReferralInvite } from "@/server/serializers/referral";
-import type { MembershipSnapshot } from "@/types/membership";
-import { PLAN_CONFIG, resolveFeatureGates } from "@/config/membership";
 
 const now = new Date();
 
@@ -19,26 +17,6 @@ function hoursAgo(hours: number) {
 function daysAgo(days: number) {
   return new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
 }
-
-const freePlan = PLAN_CONFIG.free;
-
-export const FALLBACK_MEMBERSHIP: MembershipSnapshot = {
-  tier: "free",
-  status: "inactive",
-  planHeadline: freePlan.headline,
-  planPriceHint: freePlan.priceHint,
-  renewsAt: null,
-  trialEndsAt: null,
-  perks: freePlan.perks,
-  featureGates: resolveFeatureGates("free"),
-  provider: {
-    provider: "unknown",
-    customerId: null,
-    subscriptionId: null,
-    status: "inactive",
-  },
-  source: "fallback",
-};
 
 export const FALLBACK_POSTS: SerializedPost[] = [
   {
@@ -523,6 +501,14 @@ export const FALLBACK_REFERRALS: {
   referral: { code: string; shareUrl: string };
   invites: SerializedReferralInvite[];
   summary: { total: number; accepted: number; pending: number };
+  analytics: {
+    conversionRate: number;
+    pendingRate: number;
+    waitlistOptIns: number;
+    sentThisWeek: number;
+    acceptedThisWeek: number;
+    lastInviteSentAt: string | null;
+  };
 } = {
   referral: {
     code: "FITCREW20",
@@ -572,5 +558,13 @@ export const FALLBACK_REFERRALS: {
     total: 2,
     accepted: 1,
     pending: 1,
+  },
+  analytics: {
+    conversionRate: 0.5,
+    pendingRate: 0.5,
+    waitlistOptIns: 1,
+    sentThisWeek: 1,
+    acceptedThisWeek: 1,
+    lastInviteSentAt: daysAgo(1),
   },
 };

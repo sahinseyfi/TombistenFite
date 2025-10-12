@@ -1,12 +1,9 @@
 import MobileLayout from "@/components/layout/MobileLayout";
-import { fetchMembership, fetchNotifications } from "@/lib/app-data";
+import { fetchNotifications } from "@/lib/app-data";
 import NotificationsPanel from "./panel";
 
 export default async function NotificationsPage() {
-  const [data, membership] = await Promise.all([
-    fetchNotifications(20),
-    fetchMembership(),
-  ]);
+  const data = await fetchNotifications(20);
 
   return (
     <MobileLayout title="Bildirimler" notificationCount={data.unreadCount}>
@@ -16,10 +13,7 @@ export default async function NotificationsPage() {
         </div>
       )}
 
-      <NotificationsPanel
-        initialNotifications={data.notifications}
-        source={data.source}
-      />
+      <NotificationsPanel initialNotifications={data.notifications} source={data.source} />
     </MobileLayout>
   );
 }

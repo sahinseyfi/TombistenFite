@@ -6,7 +6,6 @@ import {
   fetchProgressInsights,
   fetchChallenges,
   fetchReferrals,
-  fetchMembership,
 } from "@/lib/app-data";
 import {
   FALLBACK_CHALLENGES,
@@ -17,7 +16,6 @@ import {
   FALLBACK_UNREAD_COUNT,
   FALLBACK_PROGRESS_INSIGHTS,
   FALLBACK_REFERRALS,
-  FALLBACK_MEMBERSHIP,
 } from "@/lib/fallback-data";
 import { apiFetch, ApiError } from "@/lib/api-client";
 
@@ -81,10 +79,5 @@ describe("app-data fallbacks", () => {
     expect(referrals.invites).toEqual(FALLBACK_REFERRALS.invites);
   });
 
-  it("returns fallback membership when API fails", async () => {
-    apiFetchMock.mockRejectedValue(new ApiError(500));
-    const membership = await fetchMembership();
-    expect(membership).toEqual(FALLBACK_MEMBERSHIP);
-  });
 });
 

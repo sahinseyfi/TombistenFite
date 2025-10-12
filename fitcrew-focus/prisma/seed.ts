@@ -9,9 +9,6 @@ import {
   ChallengeFrequency,
   ChallengeStatus,
   ReferralStatus,
-  MembershipPlan,
-  MembershipStatus,
-  BillingProvider,
 } from "@prisma/client";
 import { hash } from "bcryptjs";
 
@@ -34,9 +31,6 @@ async function main() {
       avatarUrl: "https://cdn.fitcrew.local/avatars/ayse.png",
       defaultVisibility: PostVisibility.FOLLOWERS,
       referralCode: "AYSEFIT1",
-      membershipPlan: MembershipPlan.PREMIUM,
-      membershipStatus: MembershipStatus.ACTIVE,
-      membershipRenewsAt: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000),
     },
   });
 
@@ -50,28 +44,6 @@ async function main() {
       passwordHash: mertHash,
       avatarUrl: "https://cdn.fitcrew.local/avatars/mert.png",
       referralCode: "MERTPOWR",
-      membershipPlan: MembershipPlan.FREE,
-      membershipStatus: MembershipStatus.INACTIVE,
-    },
-  });
-
-  await prisma.billingCustomer.upsert({
-    where: { userId: ayse.id },
-    update: {
-      provider: BillingProvider.STRIPE,
-      providerCustomerId: "cus_seed_ayse",
-      subscriptionId: "sub_seed_ayse",
-      status: MembershipStatus.ACTIVE,
-      subscribedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
-      canceledAt: null,
-    },
-    create: {
-      userId: ayse.id,
-      provider: BillingProvider.STRIPE,
-      providerCustomerId: "cus_seed_ayse",
-      subscriptionId: "sub_seed_ayse",
-      status: MembershipStatus.ACTIVE,
-      subscribedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
     },
   });
 

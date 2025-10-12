@@ -5,7 +5,7 @@ import { Heart, MessageCircle } from "lucide-react";
 import MobileLayout from "@/components/layout/MobileLayout";
 import ChallengeCard from "@/components/challenges/ChallengeCard";
 import { cn } from "@/lib/utils";
-import { fetchChallenges, fetchFeed, fetchMembership, fetchUnreadCount } from "@/lib/app-data";
+import { fetchChallenges, fetchFeed, fetchUnreadCount } from "@/lib/app-data";
 import type { SerializedPost } from "@/server/serializers/post";
 
 function formatRelative(dateIso: string) {
@@ -131,15 +131,14 @@ function FeedPostCard({ post }: { post: SerializedPost }) {
 }
 
 export default async function FeedPage() {
-  const [feed, unreadCount, challenges, membership] = await Promise.all([
+  const [feed, unreadCount, challenges] = await Promise.all([
     fetchFeed("public", 8),
     fetchUnreadCount(),
     fetchChallenges(),
-    fetchMembership(),
   ]);
 
   return (
-    <MobileLayout title="Ak\u0131\u015F" notificationCount={unreadCount} membership={membership}>
+    <MobileLayout title="Ak\u0131\u015F" notificationCount={unreadCount}>
       {feed.source === "fallback" && (
         <div className="rounded-3xl border border-dashed border-warning/50 bg-warning/10 p-4 text-sm text-warning-foreground">
           Giri\u015F yapmad\u0131\u011F\u0131n\u0131z i\u00E7in \u00F6rnek bir ak\u0131\u015F g\u00F6steriliyor. Kimlik do\u011Frulamas\u0131

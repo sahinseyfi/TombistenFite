@@ -22,13 +22,12 @@ Bu yol haritasi 12.10.2025 itibariyla backend calismalarinin durumunu ozetler.
 - **S16 - Challenges & Routine Gamification:** Challenge/Task/Participation/Progress modelleri tanimlandi, seed senaryosuna haftalik yuruyus ornegi eklendi. `/api/challenges` GET ucu aktif challenge listesini dondururken, `/api/challenges/{id}/join` ve `/api/challenges/{id}/progress` katilim ve ilerleme kaydini sagliyor. serializeChallenge ile mobil katmanda streak, kalan adim ve odul durumu gosteriliyor; Feed sayfasina ChallengeCard bileseni eklenerek katilim/ilerleme butonlari API'lerle entegre edildi. tests/server/challenges/service.test.ts, tests/app/api/challenges/route.test.ts ve tests/lib/app-data.test.ts yeni akislari dogruluyor.
 - **S17 - Growth & Monetization (Referral v1):** ReferralStatus enumu ve ReferralInvite modeli eklendi; kullanici bazli referralCode olusturma, seed davetleri ve fallback verisi saglandi. `/api/referrals` GET/POST akislari davet kodu, istatistik ve davet listesini sunuyor; fetchReferrals fonksiyonu ile tests/app/api/referrals/route.test.ts ve tests/lib/app-data.test.ts yeni davranisi dogruluyor.
 - **S17 - Growth & Monetization (Transactional Email & Waitlist):** Resend tabanli davet e-postalari otomasyona alindi, gonderim takibi icin ReferralInvite tablosuna yeni alanlar eklendi. Waitlist opt-in talepleri Resend audience API'si ile kaydediliyor, `POST /api/webhooks/waitlist` imza dogrulamali olarak bekleme listesi olaylarini Prisma uzerinden guncelliyor; yeni Vitest senaryolari bu akislari kapsiyor.
-- **S17 - Growth & Monetization (Premium Paywall & Membership UX):** MembershipPlan/MembershipStatus alanlari ve BillingCustomer modeli ile kullanici durumu izleniyor; `/api/membership` ucu, Premium sayfasi ve PremiumGate kilitleri mobil layouta entegre edildi. tests/server/membership/service.test.ts ve tests/app/api/membership/route.test.ts yeni akisi dogruluyor.
-- **S17 - Growth & Monetization:** Growth denemeleri ve premium paket icin temel altyapi.
-  - Stripe veya Paddle benzeri odeme saglayici secilecek; BillingCustomer ve subscription webhook akislari icin PoC hayata gecirilecek.
-  - Referral funnel performansini, bekleme listesi ve aktif uyelik donusumlerini izlemek icin raporlama modeli tasarlanacak.
-  - Challenges -> Treat Wheel bonus entegrasyonu icin otomasyon ve bildirim kurallari backlog'a alinacak.
-  - Referral funnel performansini olceyecek metrik kartlari ve bekleme listesi -> aktif uyelik donusumleri icin raporlama stratejisi netlestirilecek.
+- **S17 - Growth & Monetization (Referral Analytics):** Davet paneli kabul/bekleme/Waitlist kirilimlari ile haftalik gonderim ve kabul sayilarini gosteriyor;  `/api/referrals` yanitina analytics alanini ekledik ve profil sayfasina yeni metrik kartlari yerlestirildi. tests/app/api/referrals/route.test.ts ile tests/lib/app-data.test.ts guncellendi. 
 
+- **S17 - Growth & Monetization:** Growth denemeleri ve topluluk genislemesini destekleyecek altyapi.
+  - Stripe veya Paddle benzeri odeme saglayici secilecek; faturalandirma PoC'i backlog'da.
+  - Referral funnel performansini ve bekleme listesi donusumlerini izlemek icin raporlama modeli tasarlanacak.
+  - Challenges -> Treat Wheel bonus entegrasyonu icin otomasyon ve bildirim kurallari backlog'a alinacak.
 ## Teknik Notlar
 
 - Test ortaminda path alias kullanimi icin vitest.config.ts eklendi.

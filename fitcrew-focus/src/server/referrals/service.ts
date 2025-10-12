@@ -170,23 +170,52 @@ export async function getReferralDashboard(userId: string) {
   const code = await ensureReferralCode(userId);
   const invites = await listReferralInvites(userId);
 
-  const summary: ReferralSummary = invites.reduce(
-    (acc, invite) => {
-      acc.total += 1;
-      if (invite.status === ReferralStatus.ACCEPTED) {
-        acc.accepted += 1;
-      } else if (invite.status === ReferralStatus.PENDING) {
-        acc.pending += 1;
+  const summary: ReferralSummary = { total: 0, accepted: 0, pending: 0 };
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  let waitlistOptIns = 0;
+  let sentThisWeek = 0;
+  let acceptedThisWeek = 0;
+  let lastInviteSentAt: Date | null = null;
+
+  for (const invite of invites) {
+    summary.total += 1;
+    if (invite.status === ReferralStatus.ACCEPTED) {
+      summary.accepted += 1;
+      if (invite.acceptedAt && invite.acceptedAt >= weekAgo) {
+        acceptedThisWeek += 1;
       }
-      return acc;
-    },
-    { total: 0, accepted: 0, pending: 0 } as ReferralSummary,
-  );
+    } else if (invite.status === ReferralStatus.PENDING) {
+      summary.pending += 1;
+    }
+
+    if (invite.waitlistOptIn) {
+      waitlistOptIns += 1;
+    }
+
+    if (invite.createdAt >= weekAgo) {
+      sentThisWeek += 1;
+    }
+
+    if (!lastInviteSentAt || invite.createdAt > lastInviteSentAt) {
+      lastInviteSentAt = invite.createdAt;
+    }
+  }
+
+  const conversionRate = summary.total > 0 ? summary.accepted / summary.total : 0;
+  const pendingRate = summary.total > 0 ? summary.pending / summary.total : 0;
 
   return {
     code,
     invites,
     summary,
+    analytics: {
+      conversionRate,
+      pendingRate,
+      waitlistOptIns,
+      sentThisWeek,
+      acceptedThisWeek,
+      lastInviteSentAt,
+    },
   };
 }
 

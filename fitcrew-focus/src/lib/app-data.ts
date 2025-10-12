@@ -10,7 +10,6 @@ import {
   FALLBACK_UNREAD_COUNT,
   FALLBACK_PROGRESS_INSIGHTS,
   FALLBACK_REFERRALS,
-  FALLBACK_MEMBERSHIP,
 } from "@/lib/fallback-data";
 import type { SerializedPost } from "@/server/serializers/post";
 import type { SerializedMeasurement } from "@/server/serializers/measurement";
@@ -21,7 +20,6 @@ import type { ProgressInsights } from "@/server/insights/progress";
 import type { SerializedCoachNote } from "@/server/serializers/coach-note";
 import type { SerializedChallenge } from "@/server/serializers/challenge";
 import type { SerializedReferralInvite } from "@/server/serializers/referral";
-import type { MembershipSnapshot } from "@/types/membership";
 
 type ApiListResponse<T> = {
   nextCursor: string | null | undefined;
@@ -180,6 +178,14 @@ export type ReferralData = {
     accepted: number;
     pending: number;
   };
+  analytics: {
+    conversionRate: number;
+    pendingRate: number;
+    waitlistOptIns: number;
+    sentThisWeek: number;
+    acceptedThisWeek: number;
+    lastInviteSentAt: string | null;
+  };
   source: "api" | "fallback";
 };
 
@@ -189,12 +195,14 @@ export async function fetchReferrals(): Promise<ReferralData> {
       referral: { code: string; shareUrl: string };
       invites: SerializedReferralInvite[];
       summary: { total: number; accepted: number; pending: number };
+      analytics: ReferralData["analytics"];
     }>("/api/referrals", { auth: true });
 
     return {
       referral: response.referral,
       invites: response.invites,
       summary: response.summary,
+      analytics: response.analytics,
       source: "api",
     };
   } catch (error) {
@@ -202,15 +210,6 @@ export async function fetchReferrals(): Promise<ReferralData> {
       ...FALLBACK_REFERRALS,
       source: "fallback",
     };
-  }
-}
-
-export async function fetchMembership(): Promise<MembershipSnapshot> {
-  try {
-    const response = await apiFetch<{ membership: MembershipSnapshot }>("/api/membership", { auth: true });
-    return response.membership;
-  } catch (error) {
-    return FALLBACK_MEMBERSHIP;
   }
 }
 

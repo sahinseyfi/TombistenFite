@@ -41,6 +41,14 @@ export async function GET(request: NextRequest) {
       },
       invites: dashboard.invites.map(serializeReferralInvite),
       summary: dashboard.summary,
+      analytics: {
+        conversionRate: dashboard.analytics.conversionRate,
+        pendingRate: dashboard.analytics.pendingRate,
+        waitlistOptIns: dashboard.analytics.waitlistOptIns,
+        sentThisWeek: dashboard.analytics.sentThisWeek,
+        acceptedThisWeek: dashboard.analytics.acceptedThisWeek,
+        lastInviteSentAt: dashboard.analytics.lastInviteSentAt?.toISOString() ?? null,
+      },
     },
     { request },
   );

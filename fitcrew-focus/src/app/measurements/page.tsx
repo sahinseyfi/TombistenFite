@@ -1,5 +1,5 @@
 import MobileLayout from "@/components/layout/MobileLayout";
-import { fetchMeasurements, fetchMembership, fetchUnreadCount } from "@/lib/app-data";
+import { fetchMeasurements, fetchUnreadCount } from "@/lib/app-data";
 
 function formatNumber(value: number | undefined, suffix = "") {
   if (value === undefined || Number.isNaN(value)) {
@@ -89,10 +89,9 @@ function MeasurementList({
 }
 
 export default async function MeasurementsPage() {
-  const [measurementData, unreadCount, membership] = await Promise.all([
+  const [measurementData, unreadCount] = await Promise.all([
     fetchMeasurements(30),
     fetchUnreadCount(),
-    fetchMembership(),
   ]);
 
   const latest = measurementData.measurements[0];
@@ -101,7 +100,7 @@ export default async function MeasurementsPage() {
   const weightDelta = formatDelta(latest?.weightKg, previous?.weightKg);
 
   return (
-    <MobileLayout title="\u00D6l\u00E7\u00FCmler" notificationCount={unreadCount} membership={membership}>
+    <MobileLayout title="\u00D6l\u00E7\u00FCmler" notificationCount={unreadCount}>
       {measurementData.source === "fallback" && (
         <div className="rounded-3xl border border-dashed border-info/40 bg-info/10 p-4 text-xs text-info-foreground">
           Deneme verileri g\u00F6r\u00FCnt\u00FCleniyor. Ger\u00E7ek \u00F6l\u00E7\u00FCm gruplar\u0131 i\u00E7in kimlik do\u011Frulamas\u0131 yap\u0131n.

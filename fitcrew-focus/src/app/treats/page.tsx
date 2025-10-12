@@ -1,7 +1,6 @@
 import Image from "next/image";
 import MobileLayout from "@/components/layout/MobileLayout";
-import PremiumGate from "@/components/premium/PremiumGate";
-import { fetchMembership, fetchTreats, fetchUnreadCount } from "@/lib/app-data";
+import { fetchTreats, fetchUnreadCount } from "@/lib/app-data";
 
 function describeEligibility(eligibility: Awaited<ReturnType<typeof fetchTreats>>["eligibility"]) {
   if (eligibility.eligible) {
@@ -139,15 +138,14 @@ function TreatHistory({
 }
 
 export default async function TreatsPage() {
-  const [treatData, unreadCount, membership] = await Promise.all([
+  const [treatData, unreadCount] = await Promise.all([
     fetchTreats(10),
     fetchUnreadCount(),
-    fetchMembership(),
   ]);
   const eligibilitySummary = describeEligibility(treatData.eligibility);
 
   return (
-    <MobileLayout title="\u00C7ark" notificationCount={unreadCount} membership={membership}>
+    <MobileLayout title="\u00C7ark" notificationCount={unreadCount}>
       {treatData.source === "fallback" && (
         <div className="rounded-3xl border border-dashed border-info/40 bg-info/10 p-4 text-xs text-info-foreground">
           Deneme verileri g\u00F6r\u00FCnt\u00FCleniyor. Ger\u00E7ek spin sonu\u00E7lar\u0131 i\u00E7in kimlik do\u011Frulamas\u0131 yap\u0131n.
@@ -185,9 +183,7 @@ export default async function TreatsPage() {
             {treatData.spins.length} kay\u0131t
           </span>
         </header>
-        <PremiumGate featureId="treats_bonus">
-          <TreatHistory spins={treatData.spins} />
-        </PremiumGate>
+        <TreatHistory spins={treatData.spins} />
       </section>
     </MobileLayout>
   );

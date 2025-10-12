@@ -1,0 +1,3 @@
+- Referral analytics verileri `/api/referrals` yanıtına eklendi; servis fonksiyonu yeni funnel metriklerini döndürüyor (`src/server/referrals/service.ts`, `src/app/api/referrals/route.ts`).
+- Frontend, analytics’i kullanarak profil sayfasında davet performansı kartlarını gösteriyor; fallback verisi ve app-data uyumlu hale getirildi (`src/app/profile/page.tsx`, `src/lib/app-data.ts`, `src/lib/fallback-data.ts`).
+- Dokümantasyon ve testler güncellendi; roadmap/plan status yeni tamamlanan işlemi yansıtıyor, Vitest yeşil (`docs/ROADMAP.md`, `docs/PLAN_STATUS.md`, `tests/app/api/referrals/route.test.ts`, `pnpm test`).

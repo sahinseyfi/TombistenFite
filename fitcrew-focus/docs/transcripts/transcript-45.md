@@ -1,0 +1,3 @@
+- Premium/membership bagimli tum kod kaldirildi; Prisma modeli sade durumda (`prisma/schema.prisma`), billing migrasyonu temizlendi ve seed membership alanlari silindi (`prisma/seed.ts`).
+- `/api/membership`, Premium sayfasi ve PremiumGate kilitleri dahil frontend baglantilari temizlendi (`src/app/*`, `src/components/layout/MobileLayout.tsx`, `src/lib/app-data.ts`).
+- ROADMAP/PLAN_STATUS dokumanlari her seyin ucretsiz oldugunu yansitacak sekilde duzenlendi, Vitest suiti yesil (`pnpm test`).

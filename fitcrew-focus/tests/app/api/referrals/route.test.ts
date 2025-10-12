@@ -97,6 +97,14 @@ describe("/api/referrals", () => {
         code: "ABCD1234",
         invites: [createInvite()],
         summary: { total: 1, accepted: 0, pending: 1 },
+        analytics: {
+          conversionRate: 0.5,
+          pendingRate: 0.5,
+          waitlistOptIns: 1,
+          sentThisWeek: 1,
+          acceptedThisWeek: 1,
+          lastInviteSentAt: new Date("2025-10-10T10:00:00.000Z"),
+        },
       });
 
       const response = await GET(buildRequest("https://app.local/api/referrals"));
@@ -109,6 +117,13 @@ describe("/api/referrals", () => {
       expect(body.invites[0]).toMatchObject({
         inviteeEmail: "friend@example.com",
         status: "pending",
+      });
+      expect(body.analytics).toMatchObject({
+        conversionRate: 0.5,
+        waitlistOptIns: 1,
+        sentThisWeek: 1,
+        acceptedThisWeek: 1,
+        lastInviteSentAt: "2025-10-10T10:00:00.000Z",
       });
     });
   });

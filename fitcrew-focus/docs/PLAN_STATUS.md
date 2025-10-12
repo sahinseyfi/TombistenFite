@@ -53,16 +53,15 @@ Bu dokuman, tek oturumluk calisma planindaki adimlarin mevcut durumunu ozetler v
 - **S17 - Growth & Monetization (Referral v1)**  
   ReferralStatus enumu, ReferralInvite modeli ve kullanici bazli referralCode alani eklendi. `/api/referrals` GET/POST akislari davet kodu, ozet istatistik ve davet listesini donduruyor; fetchReferrals fonksiyonu fallback verisiyle birlikte yayinda. tests/app/api/referrals/route.test.ts ve tests/lib/app-data.test.ts yeni davranisi dogruluyor; seed senaryosuna ornek davetler eklendi.
 - **S17 - Growth & Monetization (Transactional Email & Waitlist)**  
-  Resend tabanli davet e-posta servisi entegre edildi, gonderim kayitlari ReferralInvite tablosuna eklendi. Waitlist opt-in kayitlari Resend audience API'si uzerinden yapiliyor ve `POST /api/webhooks/waitlist` imza dogrulamali olarak bekleme listesi olaylarini guncelliyor. Yeni Vitest senaryolari (`tests/server/referrals/service.test.ts`, `tests/server/referrals/waitlist.test.ts`, `tests/app/api/webhooks/waitlist/route.test.ts`) bu davranislari kapsiyor.
-- **S17 - Growth & Monetization (Premium Paywall & Membership UX)**  
-  MembershipPlan/MembershipStatus alanlari ve BillingCustomer modeli ile kullanici plan durumu kayit altina alindi. `/api/membership` ucu, Premium sayfasi ve PremiumGate kilitleri MobileLayout ile butunlesti; feed/insights/treats ekranlarinda premium kilitleme mantigi eklendi. `tests/server/membership/service.test.ts` ve `tests/app/api/membership/route.test.ts` yeni akislari dogruluyor.
+  Resend tabanli davet e-posta servisi entegre edildi; waitlist opt-in talepleri Resend audience API'si uzerinden kaydediliyor ve  `POST /api/webhooks/waitlist` imza dogrulamali olarak bekleme listesi olaylarini guncelliyor. Yeni Vitest senaryolari (`tests/server/referrals/service.test.ts`, `tests/server/referrals/waitlist.test.ts`, `tests/app/api/webhooks/waitlist/route.test.ts`) bu davranislari kapsiyor. 
 
 ## Devam Eden Adimlar
+- **S17 - Growth & Monetization (Referral Analytics)**  
+  Davet paneli kabul/bekleme/Waitlist kirilimlari, haftalik gonderim ve kabul sayilariyla zenginlestirildi;  `/api/referrals` yanitina analytics alani eklendi ve profil sayfasinda yeni metrik kartlari gosteriliyor. tests/app/api/referrals/route.test.ts ile tests/lib/app-data.test.ts guncellendi. 
 
 - **S17 - Growth & Monetization**  
-  Stripe/Paddle odeme saglayici PoC'i, subscription webhook altyapisi ve faturalandirma akislari backlog'da. Referral funnel metriklerinin dashboard'a tasinmasi ile Challenges -> Treat Wheel bonus otomasyonu icin kurallar siradaki adimlar.
-
-## Orta Vadeli Basliklar
+- **S17 - Growth & Monetization**  
+- **S17 - Growth & Monetization**  
 
 - **S18 - Nutrition & Meal Plans**  
   MealPlan/MealEntry modelleri, makro hedefleri ve haftalik raporlar icin API tasarimi backlog'da. Mobilde yemek plan kartlari ve hatirlatma akislari DaisyUI bilesenleriyle prototiplenecek.

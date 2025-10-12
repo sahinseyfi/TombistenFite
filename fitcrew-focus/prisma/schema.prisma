@@ -70,25 +70,6 @@ enum ReferralStatus {
   CANCELED
 }
 
-enum MembershipPlan {
-  FREE
-  PREMIUM
-}
-
-enum MembershipStatus {
-  INACTIVE
-  ACTIVE
-  TRIALING
-  PAST_DUE
-  CANCELED
-}
-
-enum BillingProvider {
-  UNKNOWN
-  STRIPE
-  PADDLE
-}
-
 model User {
   id                String           @id @default(cuid())
   handle            String           @unique @db.VarChar(32)
@@ -101,10 +82,6 @@ model User {
   defaultVisibility PostVisibility   @default(PUBLIC)
   aiCommentDefault  Boolean          @default(true)
   referralCode      String?          @unique @db.VarChar(16)
-  membershipPlan    MembershipPlan   @default(FREE)
-  membershipStatus  MembershipStatus @default(INACTIVE)
-  membershipRenewsAt DateTime?
-  membershipTrialEndsAt DateTime?
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
 
@@ -123,9 +100,7 @@ model User {
   challengeParticipations ChallengeParticipation[]
   referralsSent      ReferralInvite[] @relation("ReferralsSent")
   referralsReceived  ReferralInvite[] @relation("ReferralsReceived")
-  billingCustomer    BillingCustomer?
 
-  @@index([membershipPlan], map: "idx_users_membership_plan")
   @@map("users")
 }
 
@@ -416,24 +391,6 @@ model ChallengeProgress {
 
   @@index([participationId, notedAt], map: "idx_progress_participation_noted")
   @@map("challenge_progress")
-}
-
-model BillingCustomer {
-  id                 String           @id @default(cuid())
-  userId             String           @unique
-  provider           BillingProvider  @default(UNKNOWN)
-  providerCustomerId String           @db.VarChar(191)
-  subscriptionId     String?          @db.VarChar(191)
-  status             MembershipStatus @default(INACTIVE)
-  subscribedAt       DateTime?
-  canceledAt         DateTime?
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([provider, providerCustomerId], map: "idx_billing_provider_customer")
-  @@map("billing_customers")
 }
 
 model ReferralInvite {

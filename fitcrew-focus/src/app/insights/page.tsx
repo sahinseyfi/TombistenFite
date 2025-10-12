@@ -2,8 +2,7 @@ import Link from "next/link";
 import MobileLayout from "@/components/layout/MobileLayout";
 import TrendCharts from "@/components/insights/TrendCharts";
 import CoachNotesList from "@/components/insights/CoachNotesList";
-import PremiumGate from "@/components/premium/PremiumGate";
-import { fetchMembership, fetchProgressInsights, fetchUnreadCount } from "@/lib/app-data";
+import { fetchProgressInsights, fetchUnreadCount } from "@/lib/app-data";
 
 function formatWeight(value: number | null | undefined) {
   if (value === null || value === undefined) {
@@ -39,15 +38,14 @@ function formatDate(iso: string | null) {
 }
 
 export default async function InsightsPage() {
-  const [insights, unreadCount, membership] = await Promise.all([
+  const [insights, unreadCount] = await Promise.all([
     fetchProgressInsights(),
     fetchUnreadCount(),
-    fetchMembership(),
   ]);
   const weightDelta = formatDeltaText(insights.summary.weightChangeKg);
 
   return (
-    <MobileLayout title="\u0130lerleme" notificationCount={unreadCount} membership={membership}>
+    <MobileLayout title="\u0130lerleme" notificationCount={unreadCount}>
       {insights.source === "fallback" && (
         <div className="rounded-3xl border border-dashed border-info/40 bg-info/10 p-4 text-xs text-info-foreground">
           \u00D6rnek ilerleme verileri g\u00F6r\u00FCnt\u00FCleniyor. Ger\u00E7ek trendleri g\u00F6rebilmek i\u00E7in giri\u015F yap\u0131n.
@@ -92,9 +90,7 @@ export default async function InsightsPage() {
         </div>
       </section>
 
-      <PremiumGate featureId="insights_trends">
-        <TrendCharts weeklySeries={insights.weeklySeries} monthlySeries={insights.monthlySeries} />
-      </PremiumGate>
+      <TrendCharts weeklySeries={insights.weeklySeries} monthlySeries={insights.monthlySeries} />
 
       <section className="space-y-2">
         <header className="flex items-center justify-between">
@@ -111,9 +107,7 @@ export default async function InsightsPage() {
             \u00D6l\u00E7\u00FCmleri g\u00F6r
           </Link>
         </header>
-        <PremiumGate featureId="coach_notes">
-          <CoachNotesList notes={insights.recentNotes} />
-        </PremiumGate>
+        <CoachNotesList notes={insights.recentNotes} />
       </section>
     </MobileLayout>
   );
