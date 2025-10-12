@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Image from "next/image";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { fetchReferrals, fetchUnreadCount } from "@/lib/app-data";
@@ -73,13 +72,14 @@ export default async function ProfilePage() {
               Kod: <span className="font-semibold text-foreground">{referrals.referral.code}</span>
             </p>
           </div>
-          <Link
+          <a
             href={referrals.referral.shareUrl}
             target="_blank"
+            rel="noopener noreferrer"
             className="rounded-full border border-border px-4 py-2 text-xs font-semibold text-foreground transition hover:bg-muted"
           >
             Davet bağlantısı
-          </Link>
+          </a>
         </header>
 
         <div className="mt-4 grid grid-cols-3 gap-3 text-center text-xs">
