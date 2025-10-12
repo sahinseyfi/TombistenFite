@@ -148,7 +148,7 @@ export default async function TreatsPage() {
     <MobileLayout title="\u00C7ark" notificationCount={unreadCount}>
       {treatData.source === "fallback" && (
         <div className="rounded-3xl border border-dashed border-info/40 bg-info/10 p-4 text-xs text-info-foreground">
-          Deneme verileri g\u00F6r\u00FCnt\u00FCleniyor. Ger\u00E7ek spin sonu\u00E7lar\u0131 i\u00E7in kimlik do\u011Frulamas\u0131 yap\u0131n.
+          Örnek Treat Wheel verileri görüntüleniyor. Gerçek spin sonuçlarını görebilmek için lütfen giriş yapın.
         </div>
       )}
 

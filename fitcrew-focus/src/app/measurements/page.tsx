@@ -103,7 +103,7 @@ export default async function MeasurementsPage() {
     <MobileLayout title="\u00D6l\u00E7\u00FCmler" notificationCount={unreadCount}>
       {measurementData.source === "fallback" && (
         <div className="rounded-3xl border border-dashed border-info/40 bg-info/10 p-4 text-xs text-info-foreground">
-          Deneme verileri g\u00F6r\u00FCnt\u00FCleniyor. Ger\u00E7ek \u00F6l\u00E7\u00FCm gruplar\u0131 i\u00E7in kimlik do\u011Frulamas\u0131 yap\u0131n.
+          Örnek ölçüm kayıtları listeleniyor. Kendi ölçümleriniz için lütfen hesabınıza giriş yapın.
         </div>
       )}
 

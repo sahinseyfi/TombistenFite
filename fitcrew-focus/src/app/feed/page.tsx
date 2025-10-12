@@ -141,8 +141,8 @@ export default async function FeedPage() {
     <MobileLayout title="Ak\u0131\u015F" notificationCount={unreadCount}>
       {feed.source === "fallback" && (
         <div className="rounded-3xl border border-dashed border-warning/50 bg-warning/10 p-4 text-sm text-warning-foreground">
-          Giri\u015F yapmad\u0131\u011F\u0131n\u0131z i\u00E7in \u00F6rnek bir ak\u0131\u015F g\u00F6steriliyor. Kimlik do\u011Frulamas\u0131
-          sonras\u0131nda ki\u015Fiselle\u015Fmi\u015F verileriniz listelenecek.
+          Giriş yapmadığınız için şu anda örnek bir akış gösteriyoruz. Hesabınıza giriş yaptığınızda size özel
+          paylaşımlar burada listelenecek.
         </div>
       )}
 
@@ -150,7 +150,7 @@ export default async function FeedPage() {
         <div className="space-y-3">
           {challenges.source === "fallback" && (
             <div className="rounded-3xl border border-dashed border-info/50 bg-info/10 p-3 text-xs text-info-foreground">
-              \u00D6rnek challenge g\u00F6r\u00FCnt\u00FCleniyor. Kay\u0131t g\u00F6ndermek i\u00E7in giri\u015F yap\u0131n.
+              Deneme amaçlı bir challenge gösteriliyor. İlerleme kaydı ekleyebilmek için lütfen giriş yapın.
             </div>
           )}
           <ChallengeCard challenge={challenges.challenges[0]} isFallback={challenges.source === "fallback"} />

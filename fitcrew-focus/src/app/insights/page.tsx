@@ -48,7 +48,7 @@ export default async function InsightsPage() {
     <MobileLayout title="\u0130lerleme" notificationCount={unreadCount}>
       {insights.source === "fallback" && (
         <div className="rounded-3xl border border-dashed border-info/40 bg-info/10 p-4 text-xs text-info-foreground">
-          \u00D6rnek ilerleme verileri g\u00F6r\u00FCnt\u00FCleniyor. Ger\u00E7ek trendleri g\u00F6rebilmek i\u00E7in giri\u015F yap\u0131n.
+          Şu anda örnek ilerleme verileri görüntüleniyor. Kendi trendlerinizi görebilmek için lütfen giriş yapın.
         </div>
       )}
 

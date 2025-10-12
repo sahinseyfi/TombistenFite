@@ -9,7 +9,7 @@ export default async function NotificationsPage() {
     <MobileLayout title="Bildirimler" notificationCount={data.unreadCount}>
       {data.source === "fallback" && (
         <div className="rounded-3xl border border-dashed border-info/40 bg-info/10 p-4 text-xs text-info-foreground">
-          Deneme bildirimleri g\u00F6r\u00FCnt\u00FCleniyor. G\u00FCncel bildirimler i\u00E7in kimlik do\u011Frulamas\u0131 yap\u0131n.
+          Deneme bildirimlerini görüyorsunuz. Kendi bildirimlerinizi takip edebilmek için lütfen giriş yapın.
         </div>
       )}
 
