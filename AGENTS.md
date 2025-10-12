@@ -1,70 +1,71 @@
-# Repository Guidelines
+# Depo Rehberi
 
-Bu belge, bu depoya katkıda bulunurken uyulacak kuralları özetler. Varsayılan ürün ve iletişim dili: Türkçe.
+Bu belge, bu depoya katkı yaparken uyulacak kuralları özetler. Varsayılan ürün ve iletişim dili **Türkçe**’dir.
 
-## Proje Yapısı ve Modül Organizasyonu
-- Kaynak kodu: `src/` (örn. `src/<paket>/`, `src/<ProjeAdi>/`).
-- Testler: `tests/` yapısı `src/` ile aynıdır (gerekirse `tests/fixtures/`).
-- Komut dosyaları/araçlar: `scripts/` (Shell/PowerShell yardımcıları).
-- Dokümanlar/varlıklar: `docs/`, `assets/`.
-- Kök yapılandırmalar: `.editorconfig`, `.gitignore` ve dil/araç ayarları (`package.json`, `pyproject.toml`, `*.csproj`).
+## Yapı ve Paket Yönetimi
+- Uygulama kodu `fitcrew-focus/` altında; kökteki `package.json` ve `pnpm-workspace.yaml` Vercel/CI için monorepo kökünü işaret eder.
+- Kaynak kodu: `fitcrew-focus/src/…`
+- Testler: `fitcrew-focus/tests/…` (gerekirse `tests/fixtures/`)
+- Dokümanlar/varlıklar: `docs/`, `assets/`
+- Ortak yapılandırmalar: `.editorconfig`, `.gitignore`, `package.json`, `pnpm-workspace.yaml`
 
-## Derleme, Test ve Geliştirme Komutları
-- `make setup` — bağımlılıkları kurar. Örn: `npm ci`, `pip install -e .[dev]`, `dotnet restore`.
-- `make dev` — yerel geliştirme/izleme. Örn: `npm run dev`, `dotnet watch run`.
-- `make test` — birim testlerini çalıştırır. Örn: `npm test`, `pytest`, `dotnet test`.
-- `make build` — üretim paketleri oluşturur. Örn: `npm run build`, `python -m build`, `dotnet build -c Release`.
-- Mevcut kod tabanı `fitcrew-focus/` dizininde yer alır ve `pnpm` komutlarına dayanır; Makefile hedefleri bu dizini otomatik kullanır.
+## Komutlar
+Kök dizinden çalıştırılabilirler; komutlar otomatik olarak `fitcrew-focus/` modülünü kullanır.
 
-## Kodlama Stili ve İsimlendirme
-- `.editorconfig`e uyun. Varsayılanlar: JS/TS 2 boşluk; Python/C# 4 boşluk; UTF-8, LF.
-- Biçimlendirme/denetim: `prettier` + `eslint` (JS/TS), `black` + `ruff` (Python), `dotnet format` (C#).
-- İsimlendirme: dosya/fonksiyon `snake_case`, sınıf/tip `PascalCase`, CLI `kebab-case`.
-- Fonksiyonları küçük ve yan etkisiz tutun; herkese açık API’leri kısaça belgelendirin (docstring/JSDoc/XML).
+| Komut | Açıklama |
+| --- | --- |
+| `pnpm install` | Bağımlılıkları kurar |
+| `pnpm dev` | Geliştirme sunucusunu başlatır |
+| `pnpm build` | Üretim derlemesi yapar (Next.js + Prisma) |
+| `pnpm test` | Vitest paketini çalıştırır |
+| `pnpm lint` | ESLint denetimi |
 
-## Test Rehberi
-- Çerçeveler: Jest/Vitest (JS/TS), Pytest (Python), xUnit/NUnit (C#).
-- Testleri `tests/` altında `src/` ile aynı hiyerarşide konumlandırın; örn. `tests/foo/test_bar.py`, `tests/foo/bar.spec.ts`, veya `Project.Tests/`.
-- Değişen kodda ≥%80 kapsama hedefleyin; hata düzeltmeleri için regresyon testi ekleyin.
-- PR öncesi `make test` yeşil olmalıdır.
+## Kodlama Stili
+- JS/TS dosyalarında 2 boşluk; UTF-8 + LF
+- `eslint` + `prettier` zorunlu
+- Fonksiyonlar küçük, yan etkisiz; dış API’lerde kısa JSDoc yeterli
 
-## Commit ve Pull Request Kuralları
-- Conventional Commits kullanın: örn. `feat: skor tablosu eklendi`, `fix(ai): null hedef koruması`.
-- Her PR tek bir mantıklı değişiklik içersin; açıklama, gerekçe ve gerekiyorsa ekran görüntüsü/log ekleyin.
-- İlgili issue’ları bağlayın (`Fixes #123`) ve davranış değişince doküman/kayıtları güncelleyin.
+## Test İlkeleri
+- Framework: **Vitest**
+- Kapsama hedefi değişen dosya için ≥%80
+- Regresyon/hata düzeltmesi için mutlaka test ekleyin
+- PR öncesi `pnpm test` yeşil olmalı
+
+## Git ve PR Kuralları
+- Conventional Commits: `feat: …`, `fix(api): …`
+- Her PR tek mantıklı değişiklik
+- Açıklamalarda gerekçe + ekran görüntüsü/log (varsa)
+- İlgili issue’ları `Fixes #id` ile bağlayın
+- Davranış değişirse dokümantasyon/ROADMAP güncelleyin
 
 ## Güvenlik ve Yapılandırma
-- Sırları commit etmeyin; `.env` kullanın ve varsayılanlar için `.env.example` sağlayın.
-- Üçüncü parti lisansları gözden geçirin; mümkünse sürümleri sabitleyin.
+- Gizli anahtarları commit etmeyin; `.env` ve `.env.example` kullanın
+- Bağımlılık lisanslarını gözden geçirin, versiyon sabitleyin
 
 ## Dil ve Yerelleştirme
-- Tüm UI metinleri, loglar ve hata mesajları Türkçe olmalıdır.
-- Metinleri `i18n/` veya `locales/tr/` altında yönetin; anahtar tabanlı çeviri kullanın ve yeni metinleri burada ekleyin.
+- UI metinleri, loglar, hata mesajları Türkçe
+- Yeni metinler `locales/` veya benzeri anahtar tabanlı yapıya eklenmeli
 
 ## Ajan Çalışma İlkeleri
-- Kullanıcının kodlama bilgisi sınırlıdır; değişiklikler kullanıcıdan istenmez. Ajan, gerekli düzenlemeleri kendi token bütçesini kullanarak doğrudan uygular.
-- Kısa bir plan paylaşın, onay gerektirmeyen işleri hemen uygulayın; yalnızca zorunlu politika/izin durumlarında onay isteyin.
-- Komutları mümkün olduğunca ajan çalıştırsın; kullanıcıdan manuel komut/kurulum talep etmeyin. Gerekirse otomasyon için `scripts/` veya `Makefile` hedefleri ekleyin.
-- Minimal ve odaklı diff üretin; mevcut stil ve dizin yapısına uyun.
-- Her değişiklik sonrası ilgili dokümantasyonu (README, AGENTS.md, i18n) güncel tutun.
+- Kullanıcı manuel işlem yapmaz; gerektiğinde değişiklikleri ajan uygular
+- Önce kısa plan, ardından uygulama; sadece zorunlu durumlarda onay iste
+- Komutları ajan koşturur, kullanıcıdan terminal çıktısı beklenmez
+- Diff’leri minimal ve odaklı tut; mevcut stile uy
+- Her önemli aksiyondan sonra ilgili doküman (README, i18n, ROADMAP vs.) güncellensin
+- Önemli mesajlar için `docs/transcripts/transcript-N.md` oluşturulmalı
 
-## UI ve Mobil Odak
-- Hazır UI kütüphanesi kullanılacaktır. Tercih: Tailwind CSS + DaisyUI (mobil odaklı, hızlı prototipleme).
-- Tasarım önceliği mobil cihazlar; masaüstü için yalnızca basit, akıcı genişleme yeterlidir.
-- Bileşenler: mobil navigasyon (alt çubuk), kart tabanlı akış, form elemanları, diyalog/alt çekmece.
+## UI / Mobil Odak
+- Tailwind CSS + DaisyUI tercih edilmeli
+- Mobil öncelikli tasarım, masaüstü uyumlu genişleme
+- Sistem bileşenleri: alt navigasyon, kart akışı, formlar, modal/bottom sheet
+- Safe-area yardımları (`pt-safe`, `pb-safe`, `viewport-fit=cover`) zorunlu
+- Mobil UX rehberi: `docs/UX_MOBILE_GUIDE.md` – yeni ekranlarda “Mobil UX Checklist” PR açıklamasına eklenmeli
 
-### Mobil UX/UI Referans (Zorunlu)
-- Bağlayıcı kılavuz: `docs/UX_MOBILE_GUIDE.md`
-- Tüm yeni ekranlar ve görsel revizyonlarda bu kılavuz uygulanmalıdır.
-- PR açıklamasına “Mobil UX Checklist” (kılavuzdaki bölüm) kopyalanıp işaretlenmelidir.
-- iPhone güvenli alanları (safe area) için kılavuzdaki `viewport-fit=cover` ve `pt-safe`/`pb-safe` yardımcıları kullanılmalıdır.
-
-## Yol Haritası
-- Güncel yol haritası: `docs/ROADMAP.md`
-- Ajan, bu dosyayı tek doğruluk kaynağı olarak kabul eder ve yeni çalışmalarla birlikte günceller.
-- Yeni özellik/karar sonrası ilgili maddeleri ROADMAP’e ve gerekli ise README/İş Listesi’ne işler.
+## Yol Haritası & Gelişmiş Analitik
+- Güncel roadmap: `docs/ROADMAP.md`
+- Yeni özellik ve kararlar roadmap’e işlenmeli
+- Referral analytics tamamlandı; `/api/referrals` funnel metriklerini döner, profil sayfası kartları güncel tut
 
 ## Transkriptler
-- Uzun yanıtların tamamı görünür olmayabileceği için, ajan her önemli mesaj/özet için `docs/transcripts/transcript-N.md` dosyası oluşturur (N artan sayı: 1,2,3,…).
-- Transkriptler, son mesajın tam metnini ve gerekli ise bağlantıları içerir.
-- Kullanıcı talep ederse geçmiş mesajlar da transkript olarak geriye dönük eklenebilir.
+- Uzun veya kritik yanıtlar `docs/transcripts/transcript-N.md` şeklinde kaydedilir (N artan tam sayı)
+- Gerekirse önceki mesajlar transkript olarak eklenebilir
