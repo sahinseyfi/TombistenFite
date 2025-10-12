@@ -1,0 +1,17 @@
+{
+  "name": "tombistenfite",
+  "private": true,
+  "workspaces": [
+    "fitcrew-focus"
+  ],
+  "scripts": {
+    "dev": "pnpm --dir fitcrew-focus dev",
+    "build": "pnpm --dir fitcrew-focus build",
+    "start": "pnpm --dir fitcrew-focus start",
+    "lint": "pnpm --dir fitcrew-focus lint"
+  },
+  "engines": {
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@10.14.0"
+}
