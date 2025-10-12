@@ -39,6 +39,11 @@ type ReferralInviteRecord = {
   status: ReferralStatus;
   inviteeUserId: string | null;
   waitlistOptIn: boolean;
+  waitlistProvider: string | null;
+  waitlistSubscriberId: string | null;
+  waitlistSubscribedAt: Date | null;
+  inviteEmailSentAt: Date | null;
+  inviteEmailProviderId: string | null;
   acceptedAt: Date | null;
   canceledAt: Date | null;
   createdAt: Date;
@@ -56,6 +61,11 @@ function createInvite(overrides?: Partial<ReferralInviteRecord>): ReferralInvite
     status: ReferralStatus.PENDING,
     inviteeUserId: null,
     waitlistOptIn: false,
+    waitlistProvider: null,
+    waitlistSubscriberId: null,
+    waitlistSubscribedAt: null,
+    inviteEmailSentAt: null,
+    inviteEmailProviderId: null,
     acceptedAt: null,
     canceledAt: null,
     createdAt: fixedDate,

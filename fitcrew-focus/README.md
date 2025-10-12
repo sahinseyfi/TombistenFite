@@ -31,7 +31,8 @@ Komutlari depo kokunden calistirin. `Makefile`, otomatik olarak `fitcrew-focus/`
 - `NODE_ENV`, `DATABASE_URL` ve `JWT_SECRET` degerlerini guncelleyin.
 - Redis ve S3 baglantilarini (`REDIS_URL`, `S3_*`) gercek servis bilgileri ile doldurun.
 - OpenAI ozellikleri icin `OPENAI_API_KEY` ve `OPENAI_MODEL` belirleyin.
-Dosyadaki varsayilanlar lokal gelisim senaryosu icin yeterlidir. Degisiklik yaptıktan sonra `pnpm prisma:generate` calistirmayi unutmayin.
+- Davet e-posta akisi icin `RESEND_API_KEY`, `RESEND_FROM_EMAIL` ve `RESEND_WAITLIST_AUDIENCE_ID` degerlerini ayarlayin; waitlist webhook imza dogrulamasi icin `WAITLIST_WEBHOOK_SECRET` belirleyip saglayici tarafinda `POST /api/webhooks/waitlist` ucunu tanimlayin.
+Dosyadaki varsayilanlar lokal gelisim senaryosu icin yeterlidir. Degisiklik yaptiktan sonra `pnpm prisma:generate` calistirmayi unutmayin.
 
 ## Test ve Kalite
 - Birim testleri: `make test` veya `pnpm test`
@@ -51,3 +52,6 @@ Degisiklik oncesi ve sonrasi tume bu kontrollerin yesil oldugundan emin olun.
 - Durum takip: `docs/PLAN_STATUS.md`
 - Sorun giderme notlari: `docs/TROUBLESHOOTING.md`
 - Mobil tasarim rehberi: `docs/UX_MOBILE_GUIDE.md`
+
+
+

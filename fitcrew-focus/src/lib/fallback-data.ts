@@ -7,6 +7,8 @@ import type { SerializedCoachNote } from "@/server/serializers/coach-note";
 import type { SerializedChallenge } from "@/server/serializers/challenge";
 import type { ProgressInsights } from "@/server/insights/progress";
 import type { SerializedReferralInvite } from "@/server/serializers/referral";
+import type { MembershipSnapshot } from "@/types/membership";
+import { PLAN_CONFIG, resolveFeatureGates } from "@/config/membership";
 
 const now = new Date();
 
@@ -17,6 +19,26 @@ function hoursAgo(hours: number) {
 function daysAgo(days: number) {
   return new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
 }
+
+const freePlan = PLAN_CONFIG.free;
+
+export const FALLBACK_MEMBERSHIP: MembershipSnapshot = {
+  tier: "free",
+  status: "inactive",
+  planHeadline: freePlan.headline,
+  planPriceHint: freePlan.priceHint,
+  renewsAt: null,
+  trialEndsAt: null,
+  perks: freePlan.perks,
+  featureGates: resolveFeatureGates("free"),
+  provider: {
+    provider: "unknown",
+    customerId: null,
+    subscriptionId: null,
+    status: "inactive",
+  },
+  source: "fallback",
+};
 
 export const FALLBACK_POSTS: SerializedPost[] = [
   {
@@ -516,6 +538,11 @@ export const FALLBACK_REFERRALS: {
       status: "accepted",
       inviteeUserId: "user-fallback-3",
       waitlistOptIn: true,
+      waitlistProvider: "resend",
+      waitlistSubscriberId: "contact-zeynep",
+      waitlistSubscribedAt: daysAgo(4),
+      inviteEmailSentAt: daysAgo(6),
+      inviteEmailProviderId: "msg-zeynep",
       acceptedAt: daysAgo(2),
       canceledAt: undefined,
       createdAt: daysAgo(6),
@@ -530,6 +557,11 @@ export const FALLBACK_REFERRALS: {
       status: "pending",
       inviteeUserId: undefined,
       waitlistOptIn: false,
+      waitlistProvider: undefined,
+      waitlistSubscriberId: undefined,
+      waitlistSubscribedAt: undefined,
+      inviteEmailSentAt: daysAgo(12),
+      inviteEmailProviderId: "msg-cem",
       acceptedAt: undefined,
       canceledAt: undefined,
       createdAt: daysAgo(1),

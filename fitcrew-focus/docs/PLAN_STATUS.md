@@ -52,11 +52,15 @@ Bu dokuman, tek oturumluk calisma planindaki adimlarin mevcut durumunu ozetler v
   Challenge/Task/Participation/Progress modelleri tanimlandi; `/api/challenges`, `/api/challenges/{id}/join` ve `/api/challenges/{id}/progress` uclari yayina alindi. serializeChallenge ile mobil katmanda streak, kalan adim ve odul durumu gosteriliyor. Feed sayfasina ChallengeCard bileseni eklenerek katilim/ilerleme butonlari API'lerle entegre edildi; tests/server/challenges/service.test.ts, tests/app/api/challenges/route.test.ts ve tests/lib/app-data.test.ts yeni akislari dogruladi.
 - **S17 - Growth & Monetization (Referral v1)**  
   ReferralStatus enumu, ReferralInvite modeli ve kullanici bazli referralCode alani eklendi. `/api/referrals` GET/POST akislari davet kodu, ozet istatistik ve davet listesini donduruyor; fetchReferrals fonksiyonu fallback verisiyle birlikte yayinda. tests/app/api/referrals/route.test.ts ve tests/lib/app-data.test.ts yeni davranisi dogruluyor; seed senaryosuna ornek davetler eklendi.
+- **S17 - Growth & Monetization (Transactional Email & Waitlist)**  
+  Resend tabanli davet e-posta servisi entegre edildi, gonderim kayitlari ReferralInvite tablosuna eklendi. Waitlist opt-in kayitlari Resend audience API'si uzerinden yapiliyor ve `POST /api/webhooks/waitlist` imza dogrulamali olarak bekleme listesi olaylarini guncelliyor. Yeni Vitest senaryolari (`tests/server/referrals/service.test.ts`, `tests/server/referrals/waitlist.test.ts`, `tests/app/api/webhooks/waitlist/route.test.ts`) bu davranislari kapsiyor.
+- **S17 - Growth & Monetization (Premium Paywall & Membership UX)**  
+  MembershipPlan/MembershipStatus alanlari ve BillingCustomer modeli ile kullanici plan durumu kayit altina alindi. `/api/membership` ucu, Premium sayfasi ve PremiumGate kilitleri MobileLayout ile butunlesti; feed/insights/treats ekranlarinda premium kilitleme mantigi eklendi. `tests/server/membership/service.test.ts` ve `tests/app/api/membership/route.test.ts` yeni akislari dogruluyor.
 
 ## Devam Eden Adimlar
 
 - **S17 - Growth & Monetization**  
-  Davet akisi sonrasi transactional e-posta servisi secimi, bekleme listesi webhook entegrasyonu ve premium paywall icin ekran/izin haritalari uzerinde calisma suruyor. Stripe/Paddle PoC'i ve odeme olaylari icin webhook altyapisi backlog'da.
+  Stripe/Paddle odeme saglayici PoC'i, subscription webhook altyapisi ve faturalandirma akislari backlog'da. Referral funnel metriklerinin dashboard'a tasinmasi ile Challenges -> Treat Wheel bonus otomasyonu icin kurallar siradaki adimlar.
 
 ## Orta Vadeli Basliklar
 
@@ -74,6 +78,6 @@ Bu dokuman, tek oturumluk calisma planindaki adimlarin mevcut durumunu ozetler v
 
 ## Onerilen Hemen Sonraki Is
 
-1. Transactional e-posta saglayici (Resend/Sendgrid vb.) secimini yapip davet gonderim/opt-in webhook gereksinimlerini taslakla; bekleme listesi icin queue/scheduler ihtiyaclarini belirle.
-2. Premium paywall ve izinli ozellikler icin ekran/akil haritalarini cikar, hangi sayfalarin kilitlenecegini ve raporlama hedeflerini netlestir.
-3. Challenge tamamlama odullerini Treat Wheel bonuslariyla baglayacak bildirim ve puan kurallarini backlog'da ayrintilandir.
+1. Stripe veya Paddle PoC'ini hazirlayarak checkout, webhook ve iptal adimlarini kesinlestirin.
+2. Referral funnel ile waitlist metriklerini dashboard'a tasimak icin veri modeli/ETL planini hazirlayin.
+3. Challenges -> Treat Wheel bonus otomasyonuna dair kurallar ve test senaryolarini backlog'a alin.

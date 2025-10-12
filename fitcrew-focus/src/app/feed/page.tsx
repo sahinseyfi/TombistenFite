@@ -3,8 +3,9 @@ import { formatDistanceToNow } from "date-fns";
 import { tr } from "date-fns/locale";
 import { Heart, MessageCircle } from "lucide-react";
 import MobileLayout from "@/components/layout/MobileLayout";
+import ChallengeCard from "@/components/challenges/ChallengeCard";
 import { cn } from "@/lib/utils";
-import { fetchFeed, fetchUnreadCount } from "@/lib/app-data";
+import { fetchChallenges, fetchFeed, fetchMembership, fetchUnreadCount } from "@/lib/app-data";
 import type { SerializedPost } from "@/server/serializers/post";
 
 function formatRelative(dateIso: string) {
@@ -130,14 +131,30 @@ function FeedPostCard({ post }: { post: SerializedPost }) {
 }
 
 export default async function FeedPage() {
-  const [feed, unreadCount] = await Promise.all([fetchFeed("public", 8), fetchUnreadCount()]);
+  const [feed, unreadCount, challenges, membership] = await Promise.all([
+    fetchFeed("public", 8),
+    fetchUnreadCount(),
+    fetchChallenges(),
+    fetchMembership(),
+  ]);
 
   return (
-    <MobileLayout title="Ak\u0131\u015F" notificationCount={unreadCount}>
+    <MobileLayout title="Ak\u0131\u015F" notificationCount={unreadCount} membership={membership}>
       {feed.source === "fallback" && (
         <div className="rounded-3xl border border-dashed border-warning/50 bg-warning/10 p-4 text-sm text-warning-foreground">
           Giri\u015F yapmad\u0131\u011F\u0131n\u0131z i\u00E7in \u00F6rnek bir ak\u0131\u015F g\u00F6steriliyor. Kimlik do\u011Frulamas\u0131
           sonras\u0131nda ki\u015Fiselle\u015Fmi\u015F verileriniz listelenecek.
+        </div>
+      )}
+
+      {challenges.challenges.length > 0 && (
+        <div className="space-y-3">
+          {challenges.source === "fallback" && (
+            <div className="rounded-3xl border border-dashed border-info/50 bg-info/10 p-3 text-xs text-info-foreground">
+              \u00D6rnek challenge g\u00F6r\u00FCnt\u00FCleniyor. Kay\u0131t g\u00F6ndermek i\u00E7in giri\u015F yap\u0131n.
+            </div>
+          )}
+          <ChallengeCard challenge={challenges.challenges[0]} isFallback={challenges.source === "fallback"} />
         </div>
       )}
 

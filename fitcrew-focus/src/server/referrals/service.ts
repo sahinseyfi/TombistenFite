@@ -1,5 +1,9 @@
 import { Prisma, ReferralStatus } from "@prisma/client";
+import type { ReferralInvite } from "@prisma/client";
+import { env } from "@/env";
 import { prisma } from "@/server/db";
+import { sendReferralInviteEmail } from "@/server/emails/referrals";
+import { registerWaitlistOptIn } from "@/server/referrals/waitlist";
 
 const REFERRAL_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const REFERRAL_CODE_LENGTH = 8;
@@ -39,6 +43,11 @@ function isUniqueViolation(error: Prisma.PrismaClientKnownRequestError, keyword:
   }
 
   return false;
+}
+
+export function buildReferralShareUrl(code: string) {
+  const base = env.APP_URL.replace(/\/$/, "");
+  return `${base}/davet?ref=${code}`;
 }
 
 export async function ensureReferralCode(userId: string): Promise<string> {
@@ -89,12 +98,22 @@ export async function createReferralInvite({
   waitlistOptIn,
 }: CreateReferralInviteInput) {
   const normalizedEmail = normalizeEmail(email);
-  await ensureReferralCode(inviterId);
+  const [referralCode, inviter] = await Promise.all([
+    ensureReferralCode(inviterId),
+    prisma.user.findUnique({
+      where: { id: inviterId },
+      select: { id: true, name: true, handle: true },
+    }),
+  ]);
+
+  if (!inviter) {
+    throw new Error("Davet eden kullanici bulunamadi.");
+  }
 
   for (let attempt = 0; attempt < 6; attempt += 1) {
     const inviteCode = generateReferralCode();
     try {
-      return await prisma.referralInvite.create({
+      const invite = await prisma.referralInvite.create({
         data: {
           inviterId,
           inviteeEmail: normalizedEmail,
@@ -103,6 +122,21 @@ export async function createReferralInvite({
           waitlistOptIn: Boolean(waitlistOptIn),
         },
       });
+      await deliverReferralInviteEmail(invite, {
+        inviterId: inviter.id,
+        inviterName: inviter.name,
+        inviterHandle: inviter.handle,
+        referralCode,
+      });
+      if (invite.waitlistOptIn) {
+        await registerWaitlistOptIn(invite, {
+          inviterId: inviter.id,
+          inviterHandle: inviter.handle,
+          inviterName: inviter.name,
+          referralCode,
+        });
+      }
+      return invite;
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
         if (isUniqueViolation(error, "invitee_email")) {
@@ -154,4 +188,40 @@ export async function getReferralDashboard(userId: string) {
     invites,
     summary,
   };
+}
+
+type DeliverReferralInviteParams = {
+  inviterId: string;
+  inviterName: string;
+  inviterHandle?: string | null;
+  referralCode: string;
+};
+
+async function deliverReferralInviteEmail(
+  invite: ReferralInvite,
+  context: DeliverReferralInviteParams,
+) {
+  try {
+    const result = await sendReferralInviteEmail({
+      to: invite.inviteeEmail,
+      inviteeName: invite.inviteeName,
+      inviteCode: invite.inviteCode,
+      shareUrl: buildReferralShareUrl(context.referralCode),
+      inviterName: context.inviterName,
+      inviterHandle: context.inviterHandle,
+      waitlistOptIn: invite.waitlistOptIn,
+    });
+
+    if (result.sent) {
+      await prisma.referralInvite.update({
+        where: { id: invite.id },
+        data: {
+          inviteEmailSentAt: new Date(),
+          inviteEmailProviderId: result.messageId ?? undefined,
+        },
+      });
+    }
+  } catch (error) {
+    console.error("Referral invite email delivery failed", error);
+  }
 }

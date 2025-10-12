@@ -1,15 +1,111 @@
+import Link from "next/link";
 import Image from "next/image";
 import MobileLayout from "@/components/layout/MobileLayout";
-import { fetchUnreadCount } from "@/lib/app-data";
+import { fetchMembership, fetchUnreadCount } from "@/lib/app-data";
 import { FALLBACK_MEASUREMENTS, FALLBACK_POSTS } from "@/lib/fallback-data";
 
 export default async function ProfilePage() {
-  const unreadCount = await fetchUnreadCount();
+  const [unreadCount, membership] = await Promise.all([
+    fetchUnreadCount(),
+    fetchMembership(),
+  ]);
   const fallbackUser = FALLBACK_POSTS[0]?.author;
   const latestMeasurement = FALLBACK_MEASUREMENTS[0];
+  const isPremium = membership.tier === "premium";
+  const statusLabelMap = {
+    active: "Aktif",
+    trialing: "Deneme",
+    past_due: "\u00D6deme bekleniyor",
+    canceled: "\u0130ptal edildi",
+    inactive: "Pasif",
+  } as const;
+  const planStatusLabel = statusLabelMap[membership.status] ?? "Pasif";
+  const planStatusTone =
+    membership.status === "active"
+      ? "bg-success/15 text-success"
+      : membership.status === "trialing"
+        ? "bg-info/15 text-info"
+        : membership.status === "past_due"
+          ? "bg-warning/15 text-warning"
+          : membership.status === "canceled"
+            ? "bg-destructive/10 text-destructive"
+            : "bg-muted text-muted-foreground";
+  const renewLabel = membership.renewsAt
+    ? new Date(membership.renewsAt).toLocaleDateString("tr-TR", {
+        day: "2-digit",
+        month: "short",
+      })
+    : null;
+  const trialLabel = membership.trialEndsAt
+    ? new Date(membership.trialEndsAt).toLocaleDateString("tr-TR", {
+        day: "2-digit",
+        month: "short",
+      })
+    : null;
 
   return (
-    <MobileLayout title="Profil" notificationCount={unreadCount}>
+    <MobileLayout title="Profil" notificationCount={unreadCount} membership={membership}>
+      <section className="rounded-3xl border border-border bg-card p-6 text-sm shadow-sm">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Plan\u0131n\u0131z</p>
+            <p className="mt-1 text-lg font-semibold text-foreground">{membership.planHeadline}</p>
+            <p className="text-xs text-muted-foreground">{membership.planPriceHint}</p>
+          </div>
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${planStatusTone}`}>
+            {planStatusLabel}
+          </span>
+        </div>
+        <div className="mt-4 space-y-1 text-xs text-muted-foreground">
+          {renewLabel ? (
+            <p>
+              Bir sonraki yenileme:{" "}
+              <span className="font-semibold text-foreground">{renewLabel}</span>
+            </p>
+          ) : (
+            <p>Yenileme tarihi hen\u00FCz tan\u0131mlanmad\u0131.</p>
+          )}
+          {trialLabel && (
+            <p>
+              Deneme biti\u015F tarihi:{" "}
+              <span className="font-semibold text-foreground">{trialLabel}</span>
+            </p>
+          )}
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {membership.perks.slice(0, 3).map((perk) => (
+            <span
+              key={perk.id}
+              className="rounded-full bg-muted px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground"
+            >
+              {perk.title}
+            </span>
+          ))}
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {!isPremium && (
+            <Link
+              href={{ pathname: "/premium" }}
+              className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
+            >
+              Premium\u2019e ge\u00E7
+            </Link>
+          )}
+          <Link
+            href={{ pathname: "/premium" }}
+            className="inline-flex items-center justify-center rounded-full border border-border px-4 py-2 text-xs font-semibold text-foreground transition hover:bg-muted"
+          >
+            Planlar\u0131 incele
+          </Link>
+          <Link
+            href="mailto:support@fitcrew-focus.local"
+            className="inline-flex items-center justify-center rounded-full border border-border px-4 py-2 text-xs font-semibold text-muted-foreground transition hover:bg-muted"
+          >
+            Destek ile ileti\u015Fim
+          </Link>
+        </div>
+      </section>
+
       <section className="rounded-3xl border border-border bg-card p-6 text-sm text-muted-foreground">
         <div className="flex items-center gap-4">
           <div className="relative h-16 w-16 overflow-hidden rounded-full bg-muted">
@@ -75,3 +171,5 @@ export default async function ProfilePage() {
     </MobileLayout>
   );
 }
+
+

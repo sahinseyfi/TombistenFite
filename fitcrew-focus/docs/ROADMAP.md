@@ -1,6 +1,6 @@
 # FitCrew Focus Roadmap
 
-Bu yol haritasi 11.10.2025 itibariyla backend calismalarinin durumunu ozetler.
+Bu yol haritasi 12.10.2025 itibariyla backend calismalarinin durumunu ozetler.
 
 ## Tamamlanan Basliklar
 
@@ -21,13 +21,13 @@ Bu yol haritasi 11.10.2025 itibariyla backend calismalarinin durumunu ozetler.
 - **S15 - Progress Insights & Coach Panel:** CoachNote modeli, post/olcum baglantilari ve fallback seed senaryosu eklendi. /api/insights/progress ucu haftalik/aylik trend serilerini, Treat Wheel istatistiklerini ve ko\u00E7 notu \u00F6zetlerini JSON olarak d\u00F6nd\u00FCr\u00FCho; serializeCoachNote ile mobil katmana uygun veri saglandi. Mobilde yeni \u0130lerleme ekran\u0131 Recharts tabanl\u0131 kartlarla kilo/bel grafigi ve Treat Wheel aktivitesini g\u00F6steriyor, ko\u00E7 notlar\u0131 DaisyUI kartlar\u0131nda listeleniyor. tests/server/insights/progress.test.ts ve tests/app/api/insights/progress/route.test.ts ile regresyon kapsam\u0131 genisletildi; BottomTabBar \u0130lerleme sekmesine guncellendi.
 - **S16 - Challenges & Routine Gamification:** Challenge/Task/Participation/Progress modelleri tanimlandi, seed senaryosuna haftalik yuruyus ornegi eklendi. `/api/challenges` GET ucu aktif challenge listesini dondururken, `/api/challenges/{id}/join` ve `/api/challenges/{id}/progress` katilim ve ilerleme kaydini sagliyor. serializeChallenge ile mobil katmanda streak, kalan adim ve odul durumu gosteriliyor; Feed sayfasina ChallengeCard bileseni eklenerek katilim/ilerleme butonlari API'lerle entegre edildi. tests/server/challenges/service.test.ts, tests/app/api/challenges/route.test.ts ve tests/lib/app-data.test.ts yeni akislari dogruluyor.
 - **S17 - Growth & Monetization (Referral v1):** ReferralStatus enumu ve ReferralInvite modeli eklendi; kullanici bazli referralCode olusturma, seed davetleri ve fallback verisi saglandi. `/api/referrals` GET/POST akislari davet kodu, istatistik ve davet listesini sunuyor; fetchReferrals fonksiyonu ile tests/app/api/referrals/route.test.ts ve tests/lib/app-data.test.ts yeni davranisi dogruluyor.
-
-## Siradaki Oncelikler
-
+- **S17 - Growth & Monetization (Transactional Email & Waitlist):** Resend tabanli davet e-postalari otomasyona alindi, gonderim takibi icin ReferralInvite tablosuna yeni alanlar eklendi. Waitlist opt-in talepleri Resend audience API'si ile kaydediliyor, `POST /api/webhooks/waitlist` imza dogrulamali olarak bekleme listesi olaylarini Prisma uzerinden guncelliyor; yeni Vitest senaryolari bu akislari kapsiyor.
+- **S17 - Growth & Monetization (Premium Paywall & Membership UX):** MembershipPlan/MembershipStatus alanlari ve BillingCustomer modeli ile kullanici durumu izleniyor; `/api/membership` ucu, Premium sayfasi ve PremiumGate kilitleri mobil layouta entegre edildi. tests/server/membership/service.test.ts ve tests/app/api/membership/route.test.ts yeni akisi dogruluyor.
 - **S17 - Growth & Monetization:** Growth denemeleri ve premium paket icin temel altyapi.
-  - Davet API'si sonrasinda transactional e-posta gonderimi icin servis secimi (Resend/Sendgrid vb.) ve bekleme listesi webhook entegrasyonu tasarlanacak.
-  - Stripe veya Paddle benzeri odeme saglayici secilecek; BillingCustomer modeli ve webhook dinleyicileri icin backlog olusacak.
-  - Paywall ekranlari, izinli ozellikler ve premium metric raporlamasi S13/S15 UI katmanlari ile senkron ilerleyecek.
+  - Stripe veya Paddle benzeri odeme saglayici secilecek; BillingCustomer ve subscription webhook akislari icin PoC hayata gecirilecek.
+  - Referral funnel performansini, bekleme listesi ve aktif uyelik donusumlerini izlemek icin raporlama modeli tasarlanacak.
+  - Challenges -> Treat Wheel bonus entegrasyonu icin otomasyon ve bildirim kurallari backlog'a alinacak.
+  - Referral funnel performansini olceyecek metrik kartlari ve bekleme listesi -> aktif uyelik donusumleri icin raporlama stratejisi netlestirilecek.
 
 ## Teknik Notlar
 
@@ -52,9 +52,14 @@ Bu yol haritasi 11.10.2025 itibariyla backend calismalarinin durumunu ozetler.
   - OpenTelemetry tabanli tracing/logging, Redis/Postgres metrik panelleri ve uyarilar icin Grafana dashboard'lari olusturulacak.
   - Kisisel veri saklama sureleri, silme istekleri ve audit log gereksinimleri icin data-retention dokumani ve yonetim scriptleri hazirlanacak.
   - SOC2/GDPR kontrol listeleri, acik kaynak kitaplik lisans taramalari ve incident response rehberi docs/security/ altinda derlenecek.
+1. Stripe veya Paddle PoC'ini hazirlayarak subscription lifecycle (checkout, webhook, iptal) gereksinimlerini kesinlestirin.
 
-## Onerilen Hemen Sonraki Is
+1. Stripe veya Paddle PoC'ini hazirlayarak subscription lifecycle (checkout, webhook, iptal) gereksinimlerini kesinlestirin.
+2. Referral funnel ve waitlist metriklerini dashboard'a tasimak icin veri modeli ve entegrasyon adimlarini tasarlayin.
+3. Challenges -> Treat Wheel bonus otomasyonunun kurallarini ve bildirim senaryolarini backlog'a alin.
 
-1. Transactional e-posta saglayici (Resend/Sendgrid vb.) secimini yapip davet gonderim/opt-in webhook gereksinimlerini taslakla; bekleme listesi icin queue/scheduler ihtiyaclarini belirle.
-2. Premium paywall ve izinli ozellikler icin UI/State akislari haritasini cikar, hangi ekranlarda kilitleme yapilacagini ve raporlama hedeflerini netlestir.
-3. Challenges -> Treat Wheel odul entegrasyonu icin bildirim ve bonus hesaplama kurallarini backlog'da ayrintilandir; odul dagitim otomasyon gereksinimlerini topla.
+
+
+
+
+

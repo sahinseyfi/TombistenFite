@@ -1,9 +1,9 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { env } from "@/env";
 import { authenticate } from "@/server/auth/session";
 import { jsonError, jsonSuccess } from "@/server/api/responses";
 import {
+  buildReferralShareUrl,
   createReferralInvite,
   getReferralDashboard,
   ReferralDuplicateEmailError,
@@ -25,11 +25,6 @@ const createReferralSchema = z.object({
   waitlistOptIn: z.boolean().optional(),
 });
 
-function buildShareUrl(code: string) {
-  const base = env.APP_URL.replace(/\/$/, "");
-  return `${base}/davet?ref=${code}`;
-}
-
 export async function GET(request: NextRequest) {
   const session = authenticate(request);
   if (!session) {
@@ -42,7 +37,7 @@ export async function GET(request: NextRequest) {
     {
       referral: {
         code: dashboard.code,
-        shareUrl: buildShareUrl(dashboard.code),
+        shareUrl: buildReferralShareUrl(dashboard.code),
       },
       invites: dashboard.invites.map(serializeReferralInvite),
       summary: dashboard.summary,

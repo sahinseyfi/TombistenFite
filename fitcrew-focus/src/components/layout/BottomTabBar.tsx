@@ -1,7 +1,6 @@
 "use client";
 
 import type { ComponentType, SVGProps } from "react";
-import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, CircleDashed, Home, TrendingUp, User } from "lucide-react";
@@ -10,7 +9,7 @@ import { useNotificationState } from "./notification-context";
 
 type TabConfig = {
   name: string;
-  href: Route;
+  href: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   isAction?: boolean;
   withBadge?: boolean;
@@ -18,7 +17,7 @@ type TabConfig = {
 
 const tabs: TabConfig[] = [
   { name: "Ak\u0131\u015F", icon: Home, href: "/feed" },
-  { name: "\u00D6l\u00E7\u00FCmler", icon: TrendingUp, href: "/measurements" },
+  { name: "\u0130lerleme", icon: TrendingUp, href: "/insights" },
   { name: "\u00C7ark", icon: CircleDashed, href: "/treats", isAction: true },
   { name: "Bildirimler", icon: Bell, href: "/notifications", withBadge: true },
   { name: "Profil", icon: User, href: "/profile" },
@@ -39,7 +38,7 @@ export default function BottomTabBar() {
           return (
             <Link
               key={tab.href}
-              href={tab.href}
+              href={{ pathname: tab.href }}
               className={cn(
                 "relative flex min-w-[60px] flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-medium transition-all",
                 tab.isAction

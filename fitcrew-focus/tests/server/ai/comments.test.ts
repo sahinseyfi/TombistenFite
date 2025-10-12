@@ -123,7 +123,7 @@ describe("processNextAiComment", () => {
 
   it("AI servisi yapılandırılmadığında postu failed olarak işaretler", async () => {
     postFindFirstMock.mockResolvedValueOnce(buildPost());
-    getOpenAIClientMock.mockReturnValueOnce(null);
+    getOpenAIClientMock.mockReturnValueOnce(null as never);
 
     const result = await processNextAiComment(baseDate);
 
