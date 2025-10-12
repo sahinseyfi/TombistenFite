@@ -13,5 +13,8 @@
   "engines": {
     "pnpm": ">=9.0.0"
   },
+  "devDependencies": {
+    "next": "^14.2.13"
+  },
   "packageManager": "pnpm@10.14.0"
 }

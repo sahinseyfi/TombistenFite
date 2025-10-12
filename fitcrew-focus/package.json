@@ -115,6 +115,16 @@
     "node": ">=18.18.0",
     "pnpm": ">=9.0.0"
   },
+  "trustedDependencies": [
+    "@embedded-postgres/linux-x64",
+    "@embedded-postgres/windows-x64",
+    "@prisma/client",
+    "@prisma/engines",
+    "esbuild",
+    "prisma",
+    "sharp",
+    "unrs-resolver"
+  ],
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   }
