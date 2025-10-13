@@ -1,6 +1,7 @@
 import { NotificationType, Prisma } from "@prisma/client";
 import { prisma } from "@/server/db";
 import { getRedisClient } from "@/server/redis";
+import { emitRefresh, emitUnreadCount } from "@/server/notifications/stream";
 
 const ACTOR_SELECT = {
   id: true,
@@ -265,7 +266,14 @@ export async function queueNotificationsForEvent(events: NotificationEvent | Not
   });
 
   const affectedUsers = new Set(fanOutEntries.map((entry) => entry.userId));
-  await Promise.all(Array.from(affectedUsers).map((userId) => invalidateUnreadCount(userId)));
+  await Promise.all(
+    Array.from(affectedUsers).map(async (userId) => {
+      await invalidateUnreadCount(userId);
+      const unread = await getUnreadCount(userId);
+      emitUnreadCount(userId, unread);
+      emitRefresh(userId);
+    }),
+  );
 
   return { created: result.count };
 }
@@ -404,6 +412,9 @@ export async function acknowledgeNotifications(userId: string, notificationIds: 
 
   if (result.count > 0) {
     await invalidateUnreadCount(userId);
+    const unread = await getUnreadCount(userId);
+    emitUnreadCount(userId, unread);
+    emitRefresh(userId);
   }
 
   return result.count;
@@ -422,6 +433,9 @@ export async function acknowledgeAllNotifications(userId: string) {
 
   if (result.count > 0) {
     await invalidateUnreadCount(userId);
+    const unread = await getUnreadCount(userId);
+    emitUnreadCount(userId, unread);
+    emitRefresh(userId);
   }
 
   return result.count;

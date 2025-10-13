@@ -1,17 +1,20 @@
-"use client";
+﻿"use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { tr } from "date-fns/locale";
 import { Bell, Heart, MessageCircle, UserPlus } from "lucide-react";
 import { useNotificationActions } from "@/components/layout/notification-context";
 import { cn } from "@/lib/utils";
+import { useNotificationsStream } from "@/hooks/useNotificationsStream";
 import type { SerializedNotification } from "@/server/serializers/notification";
 
 type PanelProps = {
   initialNotifications: SerializedNotification[];
   source: "api" | "fallback";
 };
+
+const REFRESH_ENDPOINT = "/api/notifications?limit=20";
 
 function formatRelative(dateIso: string) {
   return formatDistanceToNow(new Date(dateIso), {
@@ -21,19 +24,19 @@ function formatRelative(dateIso: string) {
 }
 
 function buildMessage(notification: SerializedNotification) {
-  const actorName = notification.actor?.name ?? "Bir kullan\u0131c\u0131";
+  const actorName = notification.actor?.name ?? "Bir kullanıcı";
 
   switch (notification.type) {
     case "like":
-      return `${actorName} g\u00F6nderinizi be\u011Fendi`;
+      return `${actorName} gönderinizi beğendi`;
     case "comment":
-      return `${actorName} g\u00F6nderinize yorum b\u0131rakt\u0131`;
+      return `${actorName} gönderinize yorum bıraktı`;
     case "follow":
-      return `${actorName} sizi takip etmeye ba\u015Flad\u0131`;
+      return `${actorName} sizi takip etmeye başladı`;
     case "ai_comment_ready":
-      return "AI yorumunuz haz\u0131r";
+      return "AI yorumunuz hazır";
     case "treat_bonus":
-      return `${actorName} yeni bonus y\u00FCr\u00FCy\u00FC\u015F\u00FCn\u00FCz\u00FC tan\u0131mlad\u0131`;
+      return `${actorName} yeni bonus yürüyüşünüzü tanımladı`;
     default:
       return "Yeni bildirim";
   }
@@ -56,9 +59,11 @@ function resolveIcon(type: string) {
   }
 }
 
-export default function NotificationsPanel({ initialNotifications }: PanelProps) {
+export default function NotificationsPanel({ initialNotifications, source }: PanelProps) {
   const [notifications, setNotifications] = useState(initialNotifications);
+  const [syncing, setSyncing] = useState(false);
   const actions = useNotificationActions();
+  const shouldStream = source === "api";
 
   const unreadCount = useMemo(
     () => notifications.filter((notification) => !notification.read).length,
@@ -69,7 +74,47 @@ export default function NotificationsPanel({ initialNotifications }: PanelProps)
     actions.setUnreadCount(unreadCount);
   }, [actions, unreadCount]);
 
-  const handleMarkAllRead = () => {
+  const refreshNotifications = useCallback(async () => {
+    if (!shouldStream) {
+      return;
+    }
+    setSyncing(true);
+    try {
+      const response = await fetch(REFRESH_ENDPOINT, {
+        method: "GET",
+        cache: "no-store",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const data = (await response.json()) as {
+        notifications?: SerializedNotification[];
+        unreadCount?: number;
+      };
+
+      if (Array.isArray(data.notifications)) {
+        setNotifications(data.notifications);
+      }
+      if (typeof data.unreadCount === "number") {
+        actions.setUnreadCount(data.unreadCount);
+      }
+    } catch (error) {
+      console.error("Bildirimler yenilenemedi:", error);
+    } finally {
+      setSyncing(false);
+    }
+  }, [actions, shouldStream]);
+
+  useNotificationsStream({
+    enabled: shouldStream,
+    onRefresh: refreshNotifications,
+    onUnreadChange: actions.setUnreadCount,
+  });
+
+  const handleMarkAllRead = useCallback(() => {
     setNotifications((prev) =>
       prev.map((notification) =>
         notification.read
@@ -81,26 +126,37 @@ export default function NotificationsPanel({ initialNotifications }: PanelProps)
             },
       ),
     );
-  };
+    actions.setUnreadCount(0);
+  }, [actions]);
 
-  const handleMarkRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((notification) =>
-        notification.id === id
-          ? {
+  const handleMarkRead = useCallback(
+    (id: string) => {
+      let changed = false;
+      setNotifications((prev) =>
+        prev.map((notification) => {
+          if (notification.id === id && !notification.read) {
+            changed = true;
+            return {
               ...notification,
               read: true,
               readAt: notification.readAt ?? new Date().toISOString(),
-            }
-          : notification,
-      ),
-    );
-  };
+            };
+          }
+          return notification;
+        }),
+      );
+
+      if (changed) {
+        actions.decrementUnread();
+      }
+    },
+    [actions],
+  );
 
   if (notifications.length === 0) {
     return (
       <div className="rounded-3xl border border-dashed border-muted-foreground/40 bg-muted/20 p-6 text-center text-sm text-muted-foreground">
-        Bildirim kutunuz \u015Fu an bo\u015F. Yeni etkile\u015Fimlerde buraya d\u00FC\u015Fecek.
+        Bildirim kutunuz şu an boş. Yeni etkileşimlerde buraya düşecek.
       </div>
     );
   }
@@ -109,7 +165,8 @@ export default function NotificationsPanel({ initialNotifications }: PanelProps)
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          {unreadCount > 0 ? `${unreadCount} okunmam\u0131\u015F bildirim` : "T\u00FCm bildirimler okundu"}
+          {unreadCount > 0 ? `${unreadCount} okunmamış bildirim` : "Tüm bildirimler okundu"}
+          {syncing && <span className="ml-2 text-xs text-muted-foreground/80">· güncelleniyor...</span>}
         </p>
         {unreadCount > 0 && (
           <button
@@ -117,7 +174,7 @@ export default function NotificationsPanel({ initialNotifications }: PanelProps)
             className="text-xs font-semibold text-primary underline-offset-2 hover:underline"
             onClick={handleMarkAllRead}
           >
-            T\u00FCm\u00FCn\u00FC okundu say
+            Tümünü okundu say
           </button>
         )}
       </div>
@@ -144,9 +201,7 @@ export default function NotificationsPanel({ initialNotifications }: PanelProps)
                   </span>
                 </div>
                 {notification.actor && (
-                  <p className="text-xs text-muted-foreground">
-                    @{notification.actor.handle}
-                  </p>
+                  <p className="text-xs text-muted-foreground">@{notification.actor.handle}</p>
                 )}
               </div>
               {isUnread && (

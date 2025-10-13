@@ -119,6 +119,9 @@ export const RATE_LIMIT_DEFAULTS = {
   postsPerMinute: 10,
   commentsPerMinute: 20,
   spinsPerDay: 3,
+  authVerificationsPerHour: 5,
+  authResendPerHour: 3,
+  authForgotPerHour: 3,
 };
 
 export function getPostsPerMinuteLimit() {
@@ -131,4 +134,16 @@ export function getCommentsPerMinuteLimit() {
 
 export function getSpinsPerDayLimit() {
   return env.RATELIMIT_SPINS_PER_DAY ?? RATE_LIMIT_DEFAULTS.spinsPerDay;
+}
+
+export function getAuthVerificationPerHourLimit() {
+  return env.RATELIMIT_AUTH_VERIFY_PER_HOUR ?? RATE_LIMIT_DEFAULTS.authVerificationsPerHour;
+}
+
+export function getAuthResendPerHourLimit() {
+  return env.RATELIMIT_AUTH_RESEND_PER_HOUR ?? RATE_LIMIT_DEFAULTS.authResendPerHour;
+}
+
+export function getAuthForgotPerHourLimit() {
+  return env.RATELIMIT_AUTH_FORGOT_PER_HOUR ?? RATE_LIMIT_DEFAULTS.authForgotPerHour;
 }

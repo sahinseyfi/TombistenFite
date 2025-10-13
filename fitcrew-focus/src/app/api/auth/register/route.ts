@@ -1,11 +1,15 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
+import { VerificationTokenType } from "@prisma/client";
 import { prisma } from "@/server/db";
 import { hashPassword } from "@/server/auth/password";
 import { generateAuthTokens } from "@/server/auth/jwt";
 import { jsonError, jsonSuccess } from "@/server/api/responses";
 import { serializeUser } from "@/server/serializers/user";
 import { normalizeEmail, normalizeHandle, normalizePhone } from "@/server/auth/utils";
+import { createVerificationToken } from "@/server/auth/verification";
+import { sendVerificationEmail } from "@/server/emails/auth";
+import { verifyHCaptcha } from "@/server/anti-abuse/hcaptcha";
 
 const registerSchema = z
   .object({
@@ -20,6 +24,7 @@ const registerSchema = z
       .max(72, "Şifre en fazla 72 karakter olmalıdır"),
     name: z.string().min(1).max(120),
     handle: z.string().regex(/^@?[a-z0-9_]{3,32}$/i, "Handle yalnızca harf, rakam ve alt çizgi içerebilir"),
+    captchaToken: z.string().min(1, "hCaptcha doğrulaması zorunlu"),
   })
   .refine((data) => data.email || data.phone, {
     message: "Email veya telefon alanlarından biri zorunlu",
@@ -41,6 +46,21 @@ export async function POST(request: NextRequest) {
         details: parsed.error.flatten(),
       },
       422,
+    );
+  }
+
+  const captcha = await verifyHCaptcha(parsed.data.captchaToken, {
+    remoteIp: request.ip ?? request.headers.get("x-forwarded-for") ?? undefined,
+  });
+
+  if (!captcha.ok) {
+    return jsonError(
+      {
+        code: "captcha_failed",
+        message: "hCaptcha doğrulaması başarısız.",
+        details: captcha.errorCode ? { code: captcha.errorCode } : undefined,
+      },
+      403,
     );
   }
 
@@ -102,6 +122,23 @@ export async function POST(request: NextRequest) {
     handle: user.handle,
     name: user.name,
   });
+
+  if (email) {
+    try {
+      const { token } = await createVerificationToken({
+        userId: user.id,
+        type: VerificationTokenType.EMAIL_VERIFICATION,
+      });
+
+      await sendVerificationEmail({
+        email,
+        name: user.name,
+        token,
+      });
+    } catch (error) {
+      console.error("Doğrulama e-postası gönderilemedi:", error);
+    }
+  }
 
   return jsonSuccess(
     {

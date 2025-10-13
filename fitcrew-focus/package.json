@@ -15,6 +15,7 @@
     "prisma:studio": "prisma studio",
     "format": "prettier --write .",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "test:watch": "vitest",
     "smoke:api": "tsx scripts/smoke/smoke-api.ts"
   },
@@ -87,6 +88,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.1.0",
+    "@playwright/test": "^1.48.2",
     "@tailwindcss/typography": "^0.5.16",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.6",

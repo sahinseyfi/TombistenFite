@@ -6,6 +6,7 @@ import { generateAuthTokens } from "@/server/auth/jwt";
 import { jsonError, jsonSuccess } from "@/server/api/responses";
 import { serializeUser } from "@/server/serializers/user";
 import { normalizeEmail, normalizeHandle, normalizePhone } from "@/server/auth/utils";
+import { verifyHCaptcha } from "@/server/anti-abuse/hcaptcha";
 
 const loginSchema = z
   .object({
@@ -16,6 +17,7 @@ const loginSchema = z
       .optional(),
     handle: z.string().regex(/^@?[a-z0-9_]{3,32}$/i, "Handle formatı geçersiz").optional(),
     password: z.string().min(8).max(72),
+    captchaToken: z.string().min(1, "hCaptcha doğrulaması zorunlu"),
   })
   .refine((data) => data.email || data.phone || data.handle, {
     message: "Email, telefon veya handle alanlarından biri zorunlu",
@@ -37,6 +39,21 @@ export async function POST(request: NextRequest) {
         details: parsed.error.flatten(),
       },
       422,
+    );
+  }
+
+  const captcha = await verifyHCaptcha(parsed.data.captchaToken, {
+    remoteIp: request.ip ?? request.headers.get("x-forwarded-for") ?? undefined,
+  });
+
+  if (!captcha.ok) {
+    return jsonError(
+      {
+        code: "captcha_failed",
+        message: "hCaptcha doğrulaması başarısız.",
+        details: captcha.errorCode ? { code: captcha.errorCode } : undefined,
+      },
+      403,
     );
   }
 
