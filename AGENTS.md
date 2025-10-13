@@ -1,34 +1,39 @@
-# Repository Guidelines
+# Codex Ajan Kilavuzu (Token Optimize)
 
-## Proje Yapısı ve Modül Organizasyonu
-- Monorepo kökü bu dizindir; uygulama kodu `fitcrew-focus/` altında tutulur.
-- UI, servisler ve yardımcılar `fitcrew-focus/src/…` içinde, testler `fitcrew-focus/tests/` klasöründe bulunur. Test verileri gerektiğinde `tests/fixtures/` altına eklenir.
-- Paylaşılan konfigürasyon dosyaları (`package.json`, `pnpm-workspace.yaml`, `.editorconfig`) repoda kök seviyededir. Dokümantasyon `docs/`, varlıklar `assets/` klasörüne yerleştirilmelidir.
+Bu depo **FitCrew Focus** otomasyon ajanlari icin optimize edilmistir. Varsayilan dil **Turkce**.
 
-## Build, Test ve Geliştirme Komutları
-- `pnpm install` → bağımlılıkları kurar (monorepo kökünden çalıştırın).
-- `pnpm dev` → Next.js geliştirme sunucusunu açar; `.env.local` bekler.
-- `pnpm build` → `prisma generate` + `next build` zincirini çalıştırır, CI ve Vercel bu komutu kullanır.
-- `pnpm test` → Vitest senaryolarını koşar; hızlı kontroller için `pnpm test --runInBand` kullanabilirsiniz.
-- `pnpm lint` ve `pnpm format` → kod kalitesi ve format için zorunlu adımlar; hata varsa düzeltmeden PR açmayın.
+## 0) Ilke ve Hedef
+- **Zero-Question**: Soru sorma; varsayilanlari sec ve devam et.
+- **Token Verimliligi**: Minimal cikti; gereksiz log, diff ve kod tekrari yok.
+- **Gizlilik**: Secrets **asla** dosyaya/commite/loga yazilmaz; sadece CI/Vercel/GitHub Secrets.
+- **Kalite Kapilari**: `pnpm typecheck && pnpm lint && pnpm test && pnpm build` yesil olmadan merge yok.
 
-## Kodlama Stili ve İsimlendirme
-- TypeScript dosyalarında 2 boşluk indent ve LF satır sonu kullanın. Prettier + ESLint otomatik format için yapılandırılmıştır.
-- UI bileşenleri Tailwind CSS + DaisyUI desenlerine uymalı; class isimlerini mümkün olduğunca yardımcı fonksiyonlarla gruplayın (`cn`, `cva`).
-- Dosya ve klasör adlarında kebab-case, TypeScript sembolleri için PascalCase (bileşenler) ve camelCase (fonksiyon/değişken) tercih edin.
-- Ortak API yüzeyleri için kısa JSDoc açıklamaları ekleyin; karmaşık mantıkları kapsülleyen yardımcılar yazın.
+## 1) Proje Yapisi
+- Uygulama koku: `fitcrew-focus/` (`APP_DIR`).
+- Next.js App Router + TypeScript + Tailwind + shadcn/ui, Prisma + PostgreSQL.
+- Test: Vitest. Smoke: `pnpm smoke:api` (opsiyonel).
 
-## Test Rehberi
-- Vitest varsayılan test koşucusudur; değişen dosya bazında ≥%80 kapsam hedeflenir. Yeni özellikler için mutlaka olumlu ve olumsuz senaryolar ekleyin.
-- Test dosyaları `*.test.ts` uzantısı ile kaynak dosya hiyerarşisini yansıtacak biçimde konumlandırılmalıdır.
-- Regresyon hatalarında önce başarısız testi yazın, ardından düzeltmeyi uygulayın.
+## 2) Komutlar
+- `pnpm dev` - gelistirme
+- `pnpm build` - `prisma generate` + `next build`
+- `pnpm typecheck` - TS denetimi
+- `pnpm lint` - ESLint
+- `pnpm test` - Vitest
+- `pnpm prisma:migrate` / `pnpm prisma:seed` / `pnpm prisma:studio`
 
-## Commit ve Pull Request Kuralları
-- Conventional Commits formatı zorunlu: `feat: …`, `fix(api): …` gibi. Tek commit mümkünse tüm değişikliği kapsamalıdır.
-- PR açıklamalarında değişikliğin amacı, etkilediği ekranlar/akışlar ve varsa log veya ekran görüntülerini paylaşın. Issue bağlantısını `Fixes #id` ile ekleyin.
-- Davranış değişiklikleri veya yeni metinler için ilgili dokümanları (`docs/ROADMAP.md`, i18n dosyaları vb.) güncelleyin.
+## 3) Calisma Akisi (Ajan)
+1. Plani kisa yaz ve baslat (tek blok).
+2. Dosya degisikliklerini **tek patch** ile uygula (sadece degisen dosyalar).
+3. `pnpm install --frozen-lockfile` (gerekirse) -> `pnpm typecheck && pnpm lint && pnpm test && pnpm build`.
+4. Ozet ve bir sonraki adimi tek paragraf yaz. Uzun log basma.
 
-## Güvenlik ve Konfigürasyon
-- Gizli bilgileri hiçbir koşulda repoya eklemeyin; `.env.local` yerine `.env.example`’ı güncel tutun.
-- Prisma ve veritabanı işlemleri için üretimde `DATABASE_URL`, `DIRECT_URL` değerlerini Vercel ortam değişkenleri üzerinden yönetin.
-- Harici servis anahtarlarında sürüm yükseltmeden önce lisans ve kullanım koşullarını doğrulayın.
+## 4) Secrets ve Ortam
+- `.env.example` **placeholder** icerir, gercek deger **yok**.
+- Yerel icin `.env.local` kullanicida kalir; CI/Prod icin GitHub/Vercel Secrets kullan.
+- Vercel: `DATABASE_URL`, `NEXT_PUBLIC_APP_URL`, gerekiyorsa `SUPABASE_URL`, `SUPABASE_ANON_KEY`.
+
+## 5) CI/Deploy
+- GitHub Actions: quality job -> Vercel preview; `main` -> prod.
+- Vercel CLI'de token'i argumanla ver; ciktiyi minimal tut, secrets maskeli kalsin.
+
+---

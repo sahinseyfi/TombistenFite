@@ -11,6 +11,10 @@ on:
 env:
   NODE_VERSION: 20
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality:
     runs-on: ubuntu-latest
@@ -40,7 +44,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: 9
 
@@ -54,6 +58,10 @@ jobs:
       - name: Install dependencies
         working-directory: fitcrew-focus
         run: pnpm install --frozen-lockfile
+
+      - name: Env check
+        working-directory: fitcrew-focus
+        run: pnpm run env:check
 
       - name: Generate Prisma client
         working-directory: fitcrew-focus
@@ -67,13 +75,17 @@ jobs:
         working-directory: fitcrew-focus
         run: pnpm prisma:seed
 
+      - name: Typecheck
+        working-directory: fitcrew-focus
+        run: pnpm typecheck
+
       - name: Lint
         working-directory: fitcrew-focus
         run: pnpm lint
 
-      - name: Unit tests
+      - name: Tests
         working-directory: fitcrew-focus
-        run: pnpm test
+        run: pnpm test -- --run
 
       - name: Build
         working-directory: fitcrew-focus
@@ -83,21 +95,16 @@ jobs:
         working-directory: fitcrew-focus
         run: pnpm smoke:api
 
-  vercel-preview:
-    name: Vercel Preview Deploy
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: quality
-    if: ${{ secrets.VERCEL_TOKEN != '' && secrets.VERCEL_PROJECT_ID != '' && secrets.VERCEL_ORG_ID != '' }}
     runs-on: ubuntu-latest
-    env:
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: 9
 
@@ -112,16 +119,14 @@ jobs:
         working-directory: fitcrew-focus
         run: pnpm install --frozen-lockfile
 
-      - name: Pull Vercel environment
+      - name: Pull Vercel env
         working-directory: fitcrew-focus
-        env:
-          VERCEL_ENV: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
-        run: pnpm dlx vercel pull --yes --environment=$VERCEL_ENV --token=$VERCEL_TOKEN
+        run: pnpm dlx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Build preview
+      - name: Build
         working-directory: fitcrew-focus
-        run: pnpm dlx vercel build --token=$VERCEL_TOKEN
+        run: pnpm dlx vercel build --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Deploy preview
+      - name: Deploy
         working-directory: fitcrew-focus
-        run: pnpm dlx vercel deploy --prebuilt --token=$VERCEL_TOKEN
+        run: pnpm dlx vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}

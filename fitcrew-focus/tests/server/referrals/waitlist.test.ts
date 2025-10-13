@@ -17,9 +17,9 @@ const {
     RESEND_WAITLIST_AUDIENCE_ID: "audience-1",
     WAITLIST_WEBHOOK_SECRET: "waitlist-secret",
   } as {
-    RESEND_API_KEY?: string;
-    RESEND_WAITLIST_AUDIENCE_ID?: string;
-    WAITLIST_WEBHOOK_SECRET?: string;
+    RESEND_API_KEY: string;
+    RESEND_WAITLIST_AUDIENCE_ID: string;
+    WAITLIST_WEBHOOK_SECRET: string;
   },
   referralInviteUpdateMock: vi.fn(),
   referralInviteUpdateManyMock: vi.fn(),
