@@ -108,7 +108,7 @@ export default function ForgotPasswordPage() {
         <CardFooter className="flex flex-col space-y-1 text-sm text-muted-foreground">
           <p>
             Giriş sayfasına dönmek için{" "}
-            <Link className="font-semibold text-primary" href="/login">
+            <Link className="font-semibold text-primary" href={{ pathname: "/login" }}>
               buraya tıklayın
             </Link>
             .

@@ -89,7 +89,7 @@ export default function RegisterPage() {
       <Script src="https://hcaptcha.com/1/api.js" async defer />
       <Card className="shadow-lg">
         <CardHeader className="space-y-2 text-center">
-          <CardTitle className="text-2xl font-bold">FitCrew Focus'a Katılın</CardTitle>
+          <CardTitle className="text-2xl font-bold">FitCrew Focus&apos;a Katılın</CardTitle>
           <CardDescription className="text-sm text-muted-foreground">
             Beslenme, ölçüm ve antrenman hedeflerinizi tek yerden yönetin.
           </CardDescription>
@@ -149,7 +149,7 @@ export default function RegisterPage() {
         <CardFooter className="flex flex-col items-center space-y-1 text-sm text-muted-foreground">
           <p>
             Zaten hesabınız var mı?{" "}
-            <Link className="font-semibold text-primary" href="/login">
+            <Link className="font-semibold text-primary" href={{ pathname: "/login" }}>
               Giriş yapın
             </Link>
           </p>

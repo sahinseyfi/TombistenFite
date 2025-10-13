@@ -115,13 +115,13 @@ export default function LoginPage() {
         <CardFooter className="flex flex-col space-y-1 text-sm text-muted-foreground">
           <p>
             Hesabınız yok mu?{" "}
-            <Link className="font-semibold text-primary" href="/register">
+            <Link className="font-semibold text-primary" href={{ pathname: "/register" }}>
               Hemen kayıt olun
             </Link>
           </p>
           <p>
             Şifrenizi mi unuttunuz?{" "}
-            <Link className="font-semibold text-primary" href="/forgot-password">
+            <Link className="font-semibold text-primary" href={{ pathname: "/forgot-password" }}>
               Sıfırlama talebi oluşturun
             </Link>
           </p>

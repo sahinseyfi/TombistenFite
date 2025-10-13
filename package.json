@@ -8,7 +8,9 @@
     "dev": "pnpm --dir fitcrew-focus dev",
     "build": "pnpm --dir fitcrew-focus build",
     "start": "pnpm --dir fitcrew-focus start",
-    "lint": "pnpm --dir fitcrew-focus lint"
+    "lint": "pnpm --dir fitcrew-focus lint",
+    "typecheck": "pnpm --dir fitcrew-focus typecheck",
+    "test": "pnpm --dir fitcrew-focus test"
   },
   "engines": {
     "pnpm": ">=9.0.0"
