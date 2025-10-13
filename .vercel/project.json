@@ -1,1 +1,16 @@
-{"projectId":"prj_OcJuVJN8Gqczfz2h6FQv32Nn9AoC","orgId":"team_rjufHepm7Evu0i1HetMuTfiU","projectName":"tombistenfite"}
+{
+  "projectId": "prj_ROV5WwK4ZDvHpe8KiJ4LtywzfxBG",
+  "orgId": "team_rjufHepm7Evu0i1HetMuTfiU",
+  "projectName": "fitcrew-focus",
+  "settings": {
+    "createdAt": 1760137474618,
+    "framework": "nextjs",
+    "devCommand": null,
+    "installCommand": "pnpm install",
+    "buildCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": "fitcrew-focus",
+    "directoryListing": false,
+    "nodeVersion": "22.x"
+  }
+}

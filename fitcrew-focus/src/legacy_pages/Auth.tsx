@@ -102,7 +102,7 @@ export default function Auth() {
                   className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
                   <a href="#" className="text-primary hover:underline">KVKK</a> ve{' '}
-                  <a href="#" className="text-primary hover:underline">Gizlilik Politikası</a>'nı
+                  <a href="#" className="text-primary hover:underline">Gizlilik Politikası</a>&apos;nı
                   okudum ve kabul ediyorum
                 </label>
               </div>
@@ -136,3 +136,4 @@ export default function Auth() {
     </div>
   );
 }
+
