@@ -7,13 +7,18 @@ export default async function NotificationsPage() {
 
   return (
     <MobileLayout title="Bildirimler" notificationCount={data.unreadCount}>
-      {data.source === "fallback" && (
+      {data.error === "unauthorized" && (
         <div className="rounded-3xl border border-dashed border-info/40 bg-info/10 p-4 text-xs text-info-foreground">
-          Deneme bildirimlerini görüyorsunuz. Kendi bildirimlerinizi takip edebilmek için lütfen giriş yapın.
+          Bildirim kutunuza erişebilmek için lütfen hesabınıza giriş yapın.
+        </div>
+      )}
+      {data.error === "unavailable" && (
+        <div className="rounded-3xl border border-dashed border-warning/40 bg-warning/10 p-4 text-xs text-warning-foreground">
+          Bildirimlere şu anda ulaşılamıyor. Lütfen kısa bir süre sonra tekrar deneyin.
         </div>
       )}
 
-      <NotificationsPanel initialNotifications={data.notifications} source={data.source} />
+      <NotificationsPanel initialNotifications={data.notifications} live={data.live} />
     </MobileLayout>
   );
 }

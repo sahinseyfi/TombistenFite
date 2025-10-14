@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
@@ -11,7 +11,7 @@ import type { SerializedNotification } from "@/server/serializers/notification";
 
 type PanelProps = {
   initialNotifications: SerializedNotification[];
-  source: "api" | "fallback";
+  live: boolean;
 };
 
 const REFRESH_ENDPOINT = "/api/notifications?limit=20";
@@ -59,11 +59,10 @@ function resolveIcon(type: string) {
   }
 }
 
-export default function NotificationsPanel({ initialNotifications, source }: PanelProps) {
+export default function NotificationsPanel({ initialNotifications, live }: PanelProps) {
   const [notifications, setNotifications] = useState(initialNotifications);
   const [syncing, setSyncing] = useState(false);
   const actions = useNotificationActions();
-  const shouldStream = source === "api";
 
   const unreadCount = useMemo(
     () => notifications.filter((notification) => !notification.read).length,
@@ -75,7 +74,7 @@ export default function NotificationsPanel({ initialNotifications, source }: Pan
   }, [actions, unreadCount]);
 
   const refreshNotifications = useCallback(async () => {
-    if (!shouldStream) {
+    if (!live) {
       return;
     }
     setSyncing(true);
@@ -106,10 +105,10 @@ export default function NotificationsPanel({ initialNotifications, source }: Pan
     } finally {
       setSyncing(false);
     }
-  }, [actions, shouldStream]);
+  }, [actions, live]);
 
   useNotificationsStream({
-    enabled: shouldStream,
+    enabled: live,
     onRefresh: refreshNotifications,
     onUnreadChange: actions.setUnreadCount,
   });

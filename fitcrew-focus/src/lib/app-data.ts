@@ -1,16 +1,4 @@
 import { apiFetch, ApiError } from "@/lib/api-client";
-import {
-  FALLBACK_CHALLENGES,
-  FALLBACK_MEASUREMENTS,
-  FALLBACK_NOTIFICATIONS,
-  FALLBACK_POSTS,
-  FALLBACK_TREAT_ELIGIBILITY,
-  FALLBACK_TREAT_ITEMS,
-  FALLBACK_TREAT_SPINS,
-  FALLBACK_UNREAD_COUNT,
-  FALLBACK_PROGRESS_INSIGHTS,
-  FALLBACK_REFERRALS,
-} from "@/lib/fallback-data";
 import type { SerializedPost } from "@/server/serializers/post";
 import type { SerializedMeasurement } from "@/server/serializers/measurement";
 import type { SerializedTreatItem, SerializedTreatSpin } from "@/server/serializers/treat";
@@ -20,6 +8,7 @@ import type { ProgressInsights } from "@/server/insights/progress";
 import type { SerializedCoachNote } from "@/server/serializers/coach-note";
 import type { SerializedChallenge } from "@/server/serializers/challenge";
 import type { SerializedReferralInvite } from "@/server/serializers/referral";
+import type { SerializedUser } from "@/server/serializers/user";
 
 type ApiListResponse<T> = {
   nextCursor: string | null | undefined;
@@ -27,10 +16,19 @@ type ApiListResponse<T> = {
 
 export type FeedScope = "public" | "following" | "me" | "close_friends";
 
+export type DataError = "unauthorized" | "unavailable";
+
+function resolveError(error: unknown): DataError {
+  if (error instanceof ApiError && error.status === 401) {
+    return "unauthorized";
+  }
+  return "unavailable";
+}
+
 export type FeedData = {
   posts: SerializedPost[];
   nextCursor: string | null;
-  source: "api" | "fallback";
+  error?: DataError;
 };
 
 export async function fetchFeed(scope: FeedScope = "public", limit = 10): Promise<FeedData> {
@@ -43,22 +41,12 @@ export async function fetchFeed(scope: FeedScope = "public", limit = 10): Promis
     return {
       posts: response.posts,
       nextCursor: response.nextCursor ?? null,
-      source: "api",
     };
   } catch (error) {
-    if (error instanceof ApiError && error.status === 401) {
-      // Session yoksa fallback verilerini g\u00F6ster
-      return {
-        posts: FALLBACK_POSTS,
-        nextCursor: null,
-        source: "fallback",
-      };
-    }
-
     return {
-      posts: FALLBACK_POSTS,
+      posts: [],
       nextCursor: null,
-      source: "fallback",
+      error: resolveError(error),
     };
   }
 }
@@ -66,7 +54,7 @@ export async function fetchFeed(scope: FeedScope = "public", limit = 10): Promis
 export type MeasurementsData = {
   measurements: SerializedMeasurement[];
   nextCursor: string | null;
-  source: "api" | "fallback";
+  error?: DataError;
 };
 
 export async function fetchMeasurements(limit = 30): Promise<MeasurementsData> {
@@ -79,13 +67,12 @@ export async function fetchMeasurements(limit = 30): Promise<MeasurementsData> {
     return {
       measurements: response.measurements,
       nextCursor: response.nextCursor ?? null,
-      source: "api",
     };
   } catch (error) {
     return {
-      measurements: FALLBACK_MEASUREMENTS,
+      measurements: [],
       nextCursor: null,
-      source: "fallback",
+      error: resolveError(error),
     };
   }
 }
@@ -94,7 +81,8 @@ export type NotificationData = {
   notifications: SerializedNotification[];
   nextCursor: string | null;
   unreadCount: number;
-  source: "api" | "fallback";
+  live: boolean;
+  error?: DataError;
 };
 
 export async function fetchNotifications(limit = 20): Promise<NotificationData> {
@@ -107,14 +95,15 @@ export async function fetchNotifications(limit = 20): Promise<NotificationData> 
       notifications: response.notifications,
       nextCursor: response.nextCursor ?? null,
       unreadCount: response.unreadCount,
-      source: "api",
+      live: true,
     };
   } catch (error) {
     return {
-      notifications: FALLBACK_NOTIFICATIONS,
+      notifications: [],
       nextCursor: null,
-      unreadCount: FALLBACK_UNREAD_COUNT,
-      source: "fallback",
+      unreadCount: 0,
+      live: false,
+      error: resolveError(error),
     };
   }
 }
@@ -126,17 +115,20 @@ export async function fetchUnreadCount(): Promise<number> {
       { auth: true },
     );
     return response.unreadCount ?? 0;
-  } catch {
-    return FALLBACK_UNREAD_COUNT;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      return 0;
+    }
+    return 0;
   }
 }
 
 export type TreatsData = {
   items: SerializedTreatItem[];
   spins: SerializedTreatSpin[];
-  eligibility: EligibilityResult;
+  eligibility: EligibilityResult | null;
   nextCursor: string | null;
-  source: "api" | "fallback";
+  error?: DataError;
 };
 
 export async function fetchTreats(limit = 20): Promise<TreatsData> {
@@ -154,15 +146,14 @@ export async function fetchTreats(limit = 20): Promise<TreatsData> {
       spins: spinsResponse.spins,
       eligibility: eligibility.eligibility,
       nextCursor: spinsResponse.nextCursor ?? null,
-      source: "api",
     };
   } catch (error) {
     return {
-      items: FALLBACK_TREAT_ITEMS,
-      spins: FALLBACK_TREAT_SPINS,
-      eligibility: FALLBACK_TREAT_ELIGIBILITY,
+      items: [],
+      spins: [],
+      eligibility: null,
       nextCursor: null,
-      source: "fallback",
+      error: resolveError(error),
     };
   }
 }
@@ -171,13 +162,13 @@ export type ReferralData = {
   referral: {
     code: string;
     shareUrl: string;
-  };
+  } | null;
   invites: SerializedReferralInvite[];
   summary: {
     total: number;
     accepted: number;
     pending: number;
-  };
+  } | null;
   analytics: {
     conversionRate: number;
     pendingRate: number;
@@ -185,8 +176,8 @@ export type ReferralData = {
     sentThisWeek: number;
     acceptedThisWeek: number;
     lastInviteSentAt: string | null;
-  };
-  source: "api" | "fallback";
+  } | null;
+  error?: DataError;
 };
 
 export async function fetchReferrals(): Promise<ReferralData> {
@@ -203,12 +194,14 @@ export async function fetchReferrals(): Promise<ReferralData> {
       invites: response.invites,
       summary: response.summary,
       analytics: response.analytics,
-      source: "api",
     };
   } catch (error) {
     return {
-      ...FALLBACK_REFERRALS,
-      source: "fallback",
+      referral: null,
+      invites: [],
+      summary: null,
+      analytics: null,
+      error: resolveError(error),
     };
   }
 }
@@ -219,11 +212,11 @@ export type ProgressSeriesPoint =
   | ProgressInsights["monthlySeries"][number];
 
 export type ProgressInsightsData = {
-  summary: ProgressSummary;
+  summary: ProgressSummary | null;
   weeklySeries: ProgressInsights["weeklySeries"];
   monthlySeries: ProgressInsights["monthlySeries"];
   recentNotes: SerializedCoachNote[];
-  source: "api" | "fallback";
+  error?: DataError;
 };
 
 export async function fetchProgressInsights(): Promise<ProgressInsightsData> {
@@ -234,19 +227,22 @@ export async function fetchProgressInsights(): Promise<ProgressInsightsData> {
       weeklySeries: response.weeklySeries,
       monthlySeries: response.monthlySeries,
       recentNotes: response.recentNotes,
-      source: "api",
     };
   } catch (error) {
     return {
-      ...FALLBACK_PROGRESS_INSIGHTS,
-      source: "fallback",
+      summary: null,
+      weeklySeries: [],
+      monthlySeries: [],
+      recentNotes: [],
+      error: resolveError(error),
     };
   }
 }
 
 export type ChallengesData = {
   challenges: SerializedChallenge[];
-  source: "api" | "fallback";
+  readOnly: boolean;
+  error?: DataError;
 };
 
 export async function fetchChallenges(): Promise<ChallengesData> {
@@ -254,12 +250,37 @@ export async function fetchChallenges(): Promise<ChallengesData> {
     const response = await apiFetch<{ challenges: SerializedChallenge[] }>("/api/challenges", { auth: true });
     return {
       challenges: response.challenges,
-      source: "api",
+      readOnly: false,
     };
   } catch (error) {
     return {
-      challenges: FALLBACK_CHALLENGES,
-      source: "fallback",
+      challenges: [],
+      readOnly: true,
+      error: resolveError(error),
+    };
+  }
+}
+
+export type ProfileOverview = {
+  user: SerializedUser;
+  latestMeasurement: SerializedMeasurement | null;
+};
+
+export type ProfileOverviewResult = {
+  profile: ProfileOverview | null;
+  error?: DataError;
+};
+
+export async function fetchProfileOverview(): Promise<ProfileOverviewResult> {
+  try {
+    const profile = await apiFetch<ProfileOverview>("/api/profile", { auth: true });
+    return {
+      profile,
+    };
+  } catch (error) {
+    return {
+      profile: null,
+      error: resolveError(error),
     };
   }
 }

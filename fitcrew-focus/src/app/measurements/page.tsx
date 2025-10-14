@@ -101,9 +101,14 @@ export default async function MeasurementsPage() {
 
   return (
     <MobileLayout title="\u00D6l\u00E7\u00FCmler" notificationCount={unreadCount}>
-      {measurementData.source === "fallback" && (
+      {measurementData.error === "unauthorized" && (
         <div className="rounded-3xl border border-dashed border-info/40 bg-info/10 p-4 text-xs text-info-foreground">
-          Örnek ölçüm kayıtları listeleniyor. Kendi ölçümleriniz için lütfen hesabınıza giriş yapın.
+          Ölçüm geçmişinizi görmek için lütfen hesabınıza giriş yapın.
+        </div>
+      )}
+      {measurementData.error === "unavailable" && (
+        <div className="rounded-3xl border border-dashed border-warning/40 bg-warning/10 p-4 text-xs text-warning-foreground">
+          Ölçüm kayıtlarına şu anda ulaşılamıyor. Lütfen kısa bir süre sonra tekrar deneyin.
         </div>
       )}
 

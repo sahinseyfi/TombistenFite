@@ -139,21 +139,30 @@ export default async function FeedPage() {
 
   return (
     <MobileLayout title="Ak\u0131\u015F" notificationCount={unreadCount}>
-      {feed.source === "fallback" && (
+      {feed.error === "unauthorized" && (
         <div className="rounded-3xl border border-dashed border-warning/50 bg-warning/10 p-4 text-sm text-warning-foreground">
-          Giriş yapmadığınız için şu anda örnek bir akış gösteriyoruz. Hesabınıza giriş yaptığınızda size özel
-          paylaşımlar burada listelenecek.
+          Giriş yapmadığınız için akış verilerine erişilemiyor. Hesabınıza giriş yaptıktan sonra kişiselleştirilmiş paylaşımlarınızı burada görebilirsiniz.
+        </div>
+      )}
+      {feed.error === "unavailable" && (
+        <div className="rounded-3xl border border-dashed border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
+          Akış verileri şu anda getirilemiyor. Lütfen kısa bir süre sonra tekrar deneyin.
         </div>
       )}
 
       {challenges.challenges.length > 0 && (
         <div className="space-y-3">
-          {challenges.source === "fallback" && (
+          {challenges.error === "unauthorized" && (
             <div className="rounded-3xl border border-dashed border-info/50 bg-info/10 p-3 text-xs text-info-foreground">
-              Deneme amaçlı bir challenge gösteriliyor. İlerleme kaydı ekleyebilmek için lütfen giriş yapın.
+              Challenge etkinliklerini görebilmek için lütfen giriş yapın.
             </div>
           )}
-          <ChallengeCard challenge={challenges.challenges[0]} isFallback={challenges.source === "fallback"} />
+          {challenges.error === "unavailable" && (
+            <div className="rounded-3xl border border-dashed border-warning/40 bg-warning/10 p-3 text-xs text-warning-foreground">
+              Challenge verileri alınamadı. Yenileyip tekrar deneyebilirsiniz.
+            </div>
+          )}
+          <ChallengeCard challenge={challenges.challenges[0]} readOnly={challenges.readOnly} />
         </div>
       )}
 

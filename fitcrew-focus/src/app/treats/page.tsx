@@ -1,8 +1,27 @@
 import Image from "next/image";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { fetchTreats, fetchUnreadCount } from "@/lib/app-data";
+import type { EligibilityResult } from "@/server/treats/eligibility";
 
-function describeEligibility(eligibility: Awaited<ReturnType<typeof fetchTreats>>["eligibility"]) {
+function describeEligibility(
+  eligibility: EligibilityResult | null,
+  error: Awaited<ReturnType<typeof fetchTreats>>["error"],
+) {
+  if (!eligibility) {
+    if (error === "unauthorized") {
+      return {
+        title: "Oturum gerekli",
+        message: "\u00C7ark\u0131 kullanabilmek i\u00E7in fitcrew hesab\u0131n\u0131za giri\u015F yapmal\u0131s\u0131n\u0131z.",
+        tone: "info" as const,
+      };
+    }
+    return {
+      title: "Veri bekleniyor",
+      message: "Treat Wheel bilgilerine ula\u015F\u0131lamad\u0131. Yenileyip tekrar deneyin.",
+      tone: "muted" as const,
+    };
+  }
+
   if (eligibility.eligible) {
     return {
       title: "Spin haz\u0131r",
@@ -142,13 +161,18 @@ export default async function TreatsPage() {
     fetchTreats(10),
     fetchUnreadCount(),
   ]);
-  const eligibilitySummary = describeEligibility(treatData.eligibility);
+  const eligibilitySummary = describeEligibility(treatData.eligibility, treatData.error);
 
   return (
     <MobileLayout title="\u00C7ark" notificationCount={unreadCount}>
-      {treatData.source === "fallback" && (
+      {treatData.error === "unauthorized" && (
         <div className="rounded-3xl border border-dashed border-info/40 bg-info/10 p-4 text-xs text-info-foreground">
-          Örnek Treat Wheel verileri görüntüleniyor. Gerçek spin sonuçlarını görebilmek için lütfen giriş yapın.
+          Treat Wheel verilerinizi görebilmek için hesabınıza giriş yapın.
+        </div>
+      )}
+      {treatData.error === "unavailable" && (
+        <div className="rounded-3xl border border-dashed border-warning/40 bg-warning/10 p-4 text-xs text-warning-foreground">
+          Treat Wheel verilerine şu anda ulaşılamıyor. Lütfen kısa bir süre sonra tekrar deneyin.
         </div>
       )}
 

@@ -7,7 +7,7 @@ import type { SerializedChallenge, SerializedChallengeParticipation } from "@/se
 
 type ChallengeCardProps = {
   challenge: SerializedChallenge;
-  isFallback?: boolean;
+  readOnly?: boolean;
 };
 
 function computeProgress(challenge: SerializedChallenge, participation: SerializedChallengeParticipation | null) {
@@ -24,7 +24,7 @@ function computeProgress(challenge: SerializedChallenge, participation: Serializ
   };
 }
 
-export default function ChallengeCard({ challenge, isFallback = false }: ChallengeCardProps) {
+export default function ChallengeCard({ challenge, readOnly = false }: ChallengeCardProps) {
   const [challengeState, setChallengeState] = useState<SerializedChallenge>(challenge);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -36,10 +36,10 @@ export default function ChallengeCard({ challenge, isFallback = false }: Challen
 
   const isJoined = Boolean(challengeState.participation);
   const isCompleted = progress.isCompleted;
-  const actionDisabled = isFallback || isPending;
+  const actionDisabled = readOnly || isPending;
 
   async function handleJoin() {
-    if (isFallback || isJoined) {
+    if (readOnly || isJoined) {
       return;
     }
 
@@ -72,7 +72,7 @@ export default function ChallengeCard({ challenge, isFallback = false }: Challen
   }
 
   async function handleLogProgress() {
-    if (isFallback || !isJoined || isCompleted) {
+    if (readOnly || !isJoined || isCompleted) {
       return;
     }
 
@@ -194,7 +194,7 @@ export default function ChallengeCard({ challenge, isFallback = false }: Challen
             disabled={actionDisabled}
           >
             {
-              isFallback
+              readOnly
                 ? "Giri\u015F yap\u0131n"
                 : "Challenge'a kat\u0131l"
             }

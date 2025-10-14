@@ -42,13 +42,19 @@ export default async function InsightsPage() {
     fetchProgressInsights(),
     fetchUnreadCount(),
   ]);
-  const weightDelta = formatDeltaText(insights.summary.weightChangeKg);
+  const summary = insights.summary;
+  const weightDelta = formatDeltaText(summary?.weightChangeKg);
 
   return (
     <MobileLayout title="\u0130lerleme" notificationCount={unreadCount}>
-      {insights.source === "fallback" && (
+      {insights.error === "unauthorized" && (
         <div className="rounded-3xl border border-dashed border-info/40 bg-info/10 p-4 text-xs text-info-foreground">
-          Şu anda örnek ilerleme verileri görüntüleniyor. Kendi trendlerinizi görebilmek için lütfen giriş yapın.
+          Kişisel ilerleme verilerinizi görebilmek için hesabınıza giriş yapın.
+        </div>
+      )}
+      {insights.error === "unavailable" && (
+        <div className="rounded-3xl border border-dashed border-warning/40 bg-warning/10 p-4 text-xs text-warning-foreground">
+          İlerleme verilerine şu anda ulaşılamıyor. Lütfen kısa bir süre sonra tekrar deneyin.
         </div>
       )}
 
@@ -56,7 +62,7 @@ export default async function InsightsPage() {
         <div className="rounded-3xl bg-gradient-to-br from-primary/15 via-primary/5 to-primary/10 p-4 text-sm shadow-sm">
           <p className="text-muted-foreground">G\u00FCncel kilo</p>
           <p className="mt-2 text-3xl font-semibold text-primary">
-            {formatWeight(insights.summary.latestWeightKg)}
+            {formatWeight(summary?.latestWeightKg)}
           </p>
           <p
             className={
@@ -73,19 +79,21 @@ export default async function InsightsPage() {
 
         <div className="rounded-3xl border border-border bg-card p-4 text-sm shadow-sm">
           <p className="text-muted-foreground">Son \u00F6l\u00E7\u00FCm</p>
-          <p className="mt-2 text-2xl font-semibold text-foreground">{formatDate(insights.summary.latestMeasurementAt)}</p>
+          <p className="mt-2 text-2xl font-semibold text-foreground">
+            {formatDate(summary?.latestMeasurementAt ?? null)}
+          </p>
           <p className="mt-2 text-xs text-muted-foreground">
-            Toplam {insights.summary.measurementCount} kay\u0131t
+            Toplam {summary?.measurementCount ?? 0} kay\u0131t
           </p>
         </div>
 
         <div className="rounded-3xl border border-border bg-card p-4 text-sm shadow-sm">
           <p className="text-muted-foreground">Son 30 g\u00FCn Treat Wheel</p>
           <p className="mt-2 text-2xl font-semibold text-foreground">
-            {insights.summary.treatSpinsLast30Days} spin
+            {summary?.treatSpinsLast30Days ?? 0} spin
           </p>
           <p className="mt-2 text-xs text-muted-foreground">
-            {insights.summary.treatBonusLast30Days} dk bonus y\u00FCr\u00FCy\u00FC\u015F
+            {summary?.treatBonusLast30Days ?? 0} dk bonus y\u00FCr\u00FCy\u00FC\u015F
           </p>
         </div>
       </section>

@@ -1,22 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  fetchChallenges,
   fetchFeed,
+  fetchNotifications,
+  fetchProfileOverview,
+  fetchProgressInsights,
+  fetchReferrals,
   fetchTreats,
   fetchUnreadCount,
-  fetchProgressInsights,
-  fetchChallenges,
-  fetchReferrals,
 } from "@/lib/app-data";
-import {
-  FALLBACK_CHALLENGES,
-  FALLBACK_POSTS,
-  FALLBACK_TREAT_ELIGIBILITY,
-  FALLBACK_TREAT_ITEMS,
-  FALLBACK_TREAT_SPINS,
-  FALLBACK_UNREAD_COUNT,
-  FALLBACK_PROGRESS_INSIGHTS,
-  FALLBACK_REFERRALS,
-} from "@/lib/fallback-data";
 import { apiFetch, ApiError } from "@/lib/api-client";
 
 vi.mock("@/lib/api-client", async () => {
@@ -33,51 +25,66 @@ beforeEach(() => {
   apiFetchMock.mockReset();
 });
 
-describe("app-data fallbacks", () => {
-  it("returns fallback posts when API fails", async () => {
-    apiFetchMock.mockRejectedValue(new ApiError(500));
+describe("app-data error handling", () => {
+  it("marks feed result as unauthorized on 401", async () => {
+    apiFetchMock.mockRejectedValueOnce(new ApiError(401));
     const result = await fetchFeed("public", 5);
-    expect(result.source).toBe("fallback");
-    expect(result.posts).toEqual(FALLBACK_POSTS);
+    expect(result.error).toBe("unauthorized");
+    expect(result.posts).toEqual([]);
+    expect(result.nextCursor).toBeNull();
   });
 
-  it("returns fallback treats when API is unreachable", async () => {
-    apiFetchMock.mockRejectedValue(new ApiError(503));
+  it("marks treats as unavailable when API fails", async () => {
+    apiFetchMock.mockRejectedValueOnce(new ApiError(503));
     const result = await fetchTreats(5);
-    expect(result.source).toBe("fallback");
-    expect(result.items).toEqual(FALLBACK_TREAT_ITEMS);
-    expect(result.spins).toEqual(FALLBACK_TREAT_SPINS);
-    expect(result.eligibility).toEqual(FALLBACK_TREAT_ELIGIBILITY);
+    expect(result.error).toBe("unavailable");
+    expect(result.items).toEqual([]);
+    expect(result.spins).toEqual([]);
+    expect(result.eligibility).toBeNull();
   });
 
-  it("falls back to cached unread count on auth error", async () => {
-    apiFetchMock.mockRejectedValue(new ApiError(401));
+  it("returns zero unread count on auth error", async () => {
+    apiFetchMock.mockRejectedValueOnce(new ApiError(401));
     const count = await fetchUnreadCount();
-    expect(count).toBe(FALLBACK_UNREAD_COUNT);
+    expect(count).toBe(0);
   });
 
-  it("returns fallback insights when API fails", async () => {
-    apiFetchMock.mockRejectedValue(new ApiError(500));
+  it("marks progress insights as unavailable on failure", async () => {
+    apiFetchMock.mockRejectedValueOnce(new ApiError(500));
     const insights = await fetchProgressInsights();
-    expect(insights.source).toBe("fallback");
-    expect(insights.summary.latestWeightKg).toBe(FALLBACK_PROGRESS_INSIGHTS.summary.latestWeightKg);
-    expect(insights.recentNotes).toEqual(FALLBACK_PROGRESS_INSIGHTS.recentNotes);
+    expect(insights.error).toBe("unavailable");
+    expect(insights.summary).toBeNull();
+    expect(insights.recentNotes).toEqual([]);
   });
 
-  it("returns fallback challenges when API fails", async () => {
-    apiFetchMock.mockRejectedValue(new ApiError(502));
+  it("marks challenges as readonly when unauthorized", async () => {
+    apiFetchMock.mockRejectedValueOnce(new ApiError(401));
     const challenges = await fetchChallenges();
-    expect(challenges.source).toBe("fallback");
-    expect(challenges.challenges).toEqual(FALLBACK_CHALLENGES);
+    expect(challenges.error).toBe("unauthorized");
+    expect(challenges.readOnly).toBe(true);
+    expect(challenges.challenges).toEqual([]);
   });
 
-  it("returns fallback referrals when API fails", async () => {
-    apiFetchMock.mockRejectedValue(new ApiError(500));
+  it("marks referrals as unauthorized", async () => {
+    apiFetchMock.mockRejectedValueOnce(new ApiError(401));
     const referrals = await fetchReferrals();
-    expect(referrals.source).toBe("fallback");
-    expect(referrals.referral.code).toBe(FALLBACK_REFERRALS.referral.code);
-    expect(referrals.invites).toEqual(FALLBACK_REFERRALS.invites);
+    expect(referrals.error).toBe("unauthorized");
+    expect(referrals.referral).toBeNull();
+    expect(referrals.invites).toEqual([]);
   });
 
-});
+  it("marks notifications as unavailable when API fails", async () => {
+    apiFetchMock.mockRejectedValueOnce(new ApiError(500));
+    const notifications = await fetchNotifications(10);
+    expect(notifications.error).toBe("unavailable");
+    expect(notifications.live).toBe(false);
+    expect(notifications.notifications).toEqual([]);
+  });
 
+  it("marks profile overview as unauthorized", async () => {
+    apiFetchMock.mockRejectedValueOnce(new ApiError(401));
+    const profile = await fetchProfileOverview();
+    expect(profile.error).toBe("unauthorized");
+    expect(profile.profile).toBeNull();
+  });
+});

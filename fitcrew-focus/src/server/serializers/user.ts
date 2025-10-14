@@ -51,3 +51,5 @@ export function serializeUser(user: UserWithCounts, options: SerializeOptions = 
     createdAt: user.createdAt.toISOString(),
   };
 }
+
+export type SerializedUser = ReturnType<typeof serializeUser>;
